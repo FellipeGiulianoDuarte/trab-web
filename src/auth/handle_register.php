@@ -15,6 +15,13 @@ $password = $_POST['password'] ?? '';
 $confirm_password = $_POST['confirm_password'] ?? '';
 
 // Step 5: Validate inputs
+// Validate email format
+if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    $_SESSION['error_message'] = "Invalid email format.";
+    header("Location: ../../public/register.php");
+    exit();
+}
+
 // Ensure all fields are filled
 if (empty($username) || empty($email) || empty($password) || empty($confirm_password)) {
     $_SESSION['error_message'] = "All fields are required.";

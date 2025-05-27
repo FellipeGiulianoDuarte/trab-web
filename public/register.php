@@ -71,6 +71,12 @@
             background-color: #dff0d8;
             border-color: #d6e9c6;
         }
+        .error-message {
+            color: red;
+            font-size: 0.9em;
+            margin-top: -10px;
+            margin-bottom: 10px;
+        }
     </style>
 </head>
 <body>
@@ -103,6 +109,7 @@
             <div>
                 <label for="email">Email:</label>
                 <input type="email" id="email" name="email" required>
+                <div id="email-error" class="error-message"></div>
             </div>
             <div>
                 <label for="password">Password:</label>
@@ -117,5 +124,31 @@
             </div>
         </form>
     </div>
+    <script>
+        const emailInput = document.getElementById('email');
+        const emailError = document.getElementById('email-error');
+        const form = document.querySelector('form');
+
+        emailInput.addEventListener('input', () => {
+            if (emailInput.validity.typeMismatch || !isValidEmail(emailInput.value)) {
+                emailError.textContent = 'Please enter a valid email address.';
+            } else {
+                emailError.textContent = '';
+            }
+        });
+
+        form.addEventListener('submit', (event) => {
+            if (!isValidEmail(emailInput.value)) {
+                emailError.textContent = 'Please enter a valid email address.';
+                event.preventDefault(); // Prevent form submission
+            }
+        });
+
+        function isValidEmail(email) {
+            // Basic email validation regex
+            const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,6}$/;
+            return emailRegex.test(email);
+        }
+    </script>
 </body>
 </html>

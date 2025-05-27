@@ -34,7 +34,8 @@ $sql_check = "SELECT id FROM users WHERE username = ? OR email = ?";
 $stmt_check = $conn->prepare($sql_check);
 if ($stmt_check === false) {
     // Handle error, e.g., log it or display a generic error message
-    $_SESSION['error_message'] = "Database error (prepare failed): " . $conn->error;
+    error_log("Database error (prepare failed): " . $conn->error);
+    $_SESSION['error_message'] = "An unexpected error occurred. Please try again later.";
     header("Location: ../../public/register.php");
     exit();
 }

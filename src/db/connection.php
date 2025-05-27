@@ -1,8 +1,8 @@
 <?php
-$servername = "localhost"; // Or your MySQL server address
-$username = "your_username"; // Replace with your MySQL username
-$password = "your_password"; // Replace with your MySQL password
-$dbname = "game_platform";
+$servername = getenv('DB_SERVERNAME') ?: 'localhost'; // Load from environment or use default
+$username = getenv('DB_USERNAME') ?: 'root'; // Load from environment or use default
+$password = getenv('DB_PASSWORD') ?: ''; // Load from environment or use default
+$dbname = getenv('DB_NAME') ?: 'game_platform'; // Load from environment or use default
 
 // Create connection using mysqli
 $conn = new mysqli($servername, $username, $password, $dbname);

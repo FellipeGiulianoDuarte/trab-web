@@ -1,10 +1,26 @@
 <?php
+// Load .env file variables
+$dotenvPath = __DIR__ . '/../../.env'; // Assumes .env is in the project root
+if (file_exists($dotenvPath)) {
+    $lines = file($dotenvPath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    foreach ($lines as $line) {
+        if (strpos(trim($line), '#') === 0) { // Skip comments
+            continue;
+        }
+        list($name, $value) = explode('=', $line, 2);
+        $name = trim($name);
+        $value = trim($value);
+        if (!array_key_exists($name, $_SERVER) && !array_key_exists($name, $_ENV)) {
+            putenv(sprintf('%s=%s', $name, $value));
+            $_ENV[$name] = $value;
+            $_SERVER[$name] = $value;
+        }
+    }
+}
+
 $servername = getenv('DB_SERVERNAME') ?: 'localhost'; // Load from environment or use default
 $username = getenv('DB_USERNAME') ?: 'root'; // Load from environment or use default
 $password = getenv('DB_PASSWORD');
-if (!$password) {
-    throw new Exception("Environment variable 'DB_PASSWORD' must be set and non-empty for database connection.");
-}
 $dbname = getenv('DB_NAME') ?: 'game_platform'; // Load from environment or use default
 
 // Create connection using mysqli

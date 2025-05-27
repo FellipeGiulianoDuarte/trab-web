@@ -22,7 +22,7 @@ if (empty($login_identifier) || empty($password)) {
 // Step 6: Fetch user from database
 // Assuming the password column in your database is named 'password' and stores the hash.
 // If it's 'password_hash', change $user['password'] to $user['password_hash'] below.
-$sql = "SELECT id, username, password FROM users WHERE username = ? OR email = ?";
+$sql = "SELECT id, username, password_hash FROM users WHERE username = ? OR email = ?"; // Changed 'password' to 'password_hash'
 $stmt = $conn->prepare($sql);
 
 if ($stmt === false) {
@@ -51,7 +51,7 @@ $result = $stmt->get_result();
 if ($result->num_rows === 1) {
     $user = $result->fetch_assoc();
     // Verify password (ensure your password column in DB is named 'password' or adjust as needed)
-    if (password_verify($password, $user['password'])) {
+    if (password_verify($password, $user['password_hash'])) { // Changed $user['password'] to $user['password_hash']
         // Password is correct
         $_SESSION['user_id'] = $user['id'];
         $_SESSION['username'] = $user['username'];

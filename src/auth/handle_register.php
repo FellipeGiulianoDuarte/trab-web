@@ -55,7 +55,7 @@ $stmt_check->close();
 // Step 7: Insert new user
 $password_hash = password_hash($password, PASSWORD_DEFAULT);
 
-$sql_insert = "INSERT INTO users (username, email, password) VALUES (?, ?, ?)";
+$sql_insert = "INSERT INTO users (username, email, password_hash) VALUES (?, ?, ?)"; // Changed 'password' to 'password_hash'
 $stmt_insert = $conn->prepare($sql_insert);
 if ($stmt_insert === false) {
     // Handle error

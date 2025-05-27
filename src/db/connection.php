@@ -1,7 +1,10 @@
 <?php
 $servername = getenv('DB_SERVERNAME') ?: 'localhost'; // Load from environment or use default
 $username = getenv('DB_USERNAME') ?: 'root'; // Load from environment or use default
-$password = getenv('DB_PASSWORD') ?: ''; // Load from environment or use default
+$password = getenv('DB_PASSWORD');
+if (!$password) {
+    throw new Exception("Environment variable 'DB_PASSWORD' must be set and non-empty for database connection.");
+}
 $dbname = getenv('DB_NAME') ?: 'game_platform'; // Load from environment or use default
 
 // Create connection using mysqli

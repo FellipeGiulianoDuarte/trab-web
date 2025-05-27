@@ -14,9 +14,7 @@ if ($conn->connect_error) {
 
 // Optional: Set character set to utf8mb4 for full Unicode support
 if (!$conn->set_charset("utf8mb4")) {
-    printf("Error loading character set utf8mb4: %s
-", $conn->error);
-    // Consider whether to die() here or proceed with default charset
+    throw new Exception("Error loading character set utf8mb4: " . $conn->error);
 }
 
 // The connection object $conn can now be used to perform database operations.

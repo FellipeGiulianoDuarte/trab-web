@@ -88,7 +88,7 @@
         <?php if (isset($_SESSION['success_message'])): ?>
             <div class="alert alert-success">
                 <?php 
-                    echo $_SESSION['success_message']; 
+                    echo htmlspecialchars($_SESSION['success_message'], ENT_QUOTES, 'UTF-8'); 
                     unset($_SESSION['success_message']);
                 ?>
             </div>

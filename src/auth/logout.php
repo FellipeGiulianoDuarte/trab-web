@@ -6,7 +6,6 @@ session_start();
 session_unset(); // or $_SESSION = array();
 
 // Step 3: Destroy the session
-session_regenerate_id(true);
 session_destroy();
 
 // Step 4: Use a flash mechanism to store the logout message

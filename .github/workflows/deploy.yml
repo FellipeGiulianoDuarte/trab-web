@@ -1,68 +1,40 @@
-# Nome do Workflow
 name: Deploy to AWS EC2
 
-# Evento que aciona o workflow (quando houver um push na branch 'main')
 on:
   push:
     branches:
       - main
 
-# Define os jobs que serão executados
 jobs:
   deploy:
-    # O tipo de máquina virtual que o job vai rodar
     runs-on: ubuntu-latest
 
-    # Passos que compõem o job de deploy
     steps:
-      # 1. Faz o checkout do seu código do repositório para o ambiente da Action
+      # 1. Faz o checkout do seu código do repositório
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2. Substitui os placeholders no arquivo de conexão com os secrets do GitHub
+      # 2. Atualiza o arquivo de conexão com os secrets
       - name: Update connection.php with secrets
         run: |
-          # Cria uma cópia temporária para segurança
-          cp src/db/connection.php src/db/connection_temp.php
-          
-          # Substitui cada placeholder com o secret correspondente
-          # Usamos '|' como delimitador para evitar problemas com senhas que contenham '/'
-          sed -i "s|%%DB_HOST%%|${{ secrets.DB_HOST }}|g" src/db/connection_temp.php
-          sed -i "s|%%DB_USER_PROD%%|${{ secrets.DB_USER_PROD }}|g" src/db/connection_temp.php
-          sed -i "s|%%DB_PASSWORD_PROD%%|${{ secrets.DB_PASSWORD_PROD }}|g" src/db/connection_temp.php
-          sed -i "s|%%DB_NAME_PROD%%|${{ secrets.DB_NAME_PROD }}|g" src/db/connection_temp.php
-          
-          # Renomeia o arquivo modificado para o nome original
-          mv src/db/connection_temp.php src/db/connection.php
+          sed -i "s|%%DB_HOST%%|${{ secrets.DB_HOST }}|g" src/db/connection.php
+          sed -i "s|%%DB_USER_PROD%%|${{ secrets.DB_USER_PROD }}|g" src/db/connection.php
+          sed -i "s|%%DB_PASSWORD_PROD%%|${{ secrets.DB_PASSWORD_PROD }}|g" src/db/connection.php
+          sed -i "s|%%DB_NAME_PROD%%|${{ secrets.DB_NAME_PROD }}|g" src/db/connection.php
 
-      # 3. PASSO DE DEPURAÇÃO: Verifica o tamanho total da pasta do projeto
-      - name: Check project size
-        run: |
-          echo "=================================================="
-          echo "Calculando o tamanho do projeto em $GITHUB_WORKSPACE"
-          du -sh $GITHUB_WORKSPACE
-          echo "=================================================="
-
-      # 4. Faz o deploy dos arquivos para a instância EC2 via SSH
-      - name: Deploy to EC2
-        uses: appleboy/ssh-action@v1.0.3
+      # 3. Transfere os arquivos para a EC2 usando rsync (o método correto)
+      - name: Deploy project files to EC2
+        uses: easingthemes/ssh-deploy@v5.0.0
         with:
-          host: ${{ secrets.AWS_HOST }}
-          username: ${{ secrets.AWS_USERNAME }}
-          key: ${{ secrets.AWS_SSH_KEY }}
-          script: |
-            # Navega para o diretório raiz do Apache
-            cd /var/www/html
-            
-            # Limpa o diretório de forma segura, removendo arquivos e pastas antigos
-            # Preserva pastas ocultas importantes como '.well-known' (para SSL)
-            sudo find . -maxdepth 1 ! -name '.well-known' ! -name '.' ! -name '..' -exec rm -rf {} \;
-            
-            # Copia os arquivos do projeto (do ambiente da Action) para a instância EC2
-            # A fonte '$GITHUB_WORKSPACE/' garante que apenas o conteúdo do projeto seja copiado
-            sudo rsync -avz --exclude '.git' --exclude '.github' --exclude '.env' --exclude 'README.md' --exclude 'IMPLEMENTATION_GUIDE.md' --exclude 'db_schema.sql' $GITHUB_WORKSPACE/ /var/www/html/
+          SSH_PRIVATE_KEY: ${{ secrets.AWS_SSH_KEY }}
+          ARGS: "-avz --delete"
+          SOURCE: "./" # Copia tudo da raiz do projeto
+          REMOTE_HOST: ${{ secrets.AWS_HOST }}
+          REMOTE_USER: ${{ secrets.AWS_USERNAME }}
+          TARGET: "/var/www/html/" # Onde os arquivos serão colocados
+          EXCLUDE: "/.git/, /.github/, /db_schema.sql, /README.md, /IMPLEMENTATION_GUIDE.md"
 
-      # 5. Ajusta as permissões dos arquivos na instância EC2
+      # 4. Ajusta as permissões na EC2 após os arquivos serem copiados
       - name: Set permissions on EC2
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -70,12 +42,10 @@ jobs:
           username: ${{ secrets.AWS_USERNAME }}
           key: ${{ secrets.AWS_SSH_KEY }}
           script: |
-            # Define o proprietário dos arquivos como o usuário do servidor web (www-data)
+            echo "Ajustando permissões dos arquivos no servidor..."
             sudo chown -R www-data:www-data /var/www/html
-            
-            # Define permissões padrão seguras: 755 para diretórios e 644 para arquivos
             sudo find /var/www/html -type d -exec chmod 755 {} \;
             sudo find /var/www/html -type f -exec chmod 644 {} \;
-
-            # Reinicia o Apache para garantir que todas as alterações entrem em vigor
+            echo "Reiniciando o Apache..."
             sudo systemctl restart apache2
+            echo "Deploy concluído com sucesso!"

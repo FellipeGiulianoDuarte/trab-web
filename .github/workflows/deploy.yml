@@ -1,0 +1,65 @@
+name: Deploy to AWS EC2
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Update connection.php with secrets
+        run: |
+          # Cria uma cópia temporária do arquivo de conexão
+          cp src/db/connection.php src/db/connection_temp.php
+          
+          # Substitui os placeholders no arquivo de conexão temporário pelos secrets do GitHub
+          # Usando delimitadores diferentes para sed (ex: |) para evitar problemas com caracteres especiais nas senhas
+          sed -i "s|%%DB_HOST%%|${{ secrets.DB_HOST }}|g" src/db/connection_temp.php
+          sed -i "s|%%DB_USER_PROD%%|${{ secrets.DB_USER_PROD }}|g" src/db/connection_temp.php
+          sed -i "s|%%DB_PASSWORD_PROD%%|${{ secrets.DB_PASSWORD_PROD }}|g" src/db/connection_temp.php
+          sed -i "s|%%DB_NAME_PROD%%|${{ secrets.DB_NAME_PROD }}|g" src/db/connection_temp.php
+          
+          # Move o arquivo modificado para o local final
+          mv src/db/connection_temp.php src/db/connection.php
+
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.AWS_HOST }}
+          username: ${{ secrets.AWS_USERNAME }}
+          key: ${{ secrets.AWS_SSH_KEY }}
+          script: |
+            # Navega para o diretório do Apache
+            cd /var/www/html
+            
+            # Remove o conteúdo antigo (exceto arquivos/pastas ocultas como .well-known para SSL)
+            sudo find . -maxdepth 1 ! -name '.well-known' ! -name '.' ! -name '..' -exec rm -rf {} \;
+            
+            # Copia os novos arquivos do projeto para o diretório
+            # O rsync vai transferir os arquivos do runner do GitHub para a sua instância
+            # $GITHUB_WORKSPACE é o diretório onde o código foi checado no runner
+            sudo rsync -avz --exclude '.git' --exclude '.github' --exclude '.env' --exclude 'README.md' --exclude 'IMPLEMENTATION_GUIDE.md' --exclude 'db_schema.sql' $GITHUB_WORKSPACE/ /var/www/html/
+
+      - name: Set permissions on EC2
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.AWS_HOST }}
+          username: ${{ secrets.AWS_USERNAME }}
+          key: ${{ secrets.AWS_SSH_KEY }}
+          script: |
+            # Ajusta o proprietário e as permissões dos arquivos
+            sudo chown -R www-data:www-data /var/www/html
+            sudo find /var/www/html -type d -exec chmod 755 {} \;
+            sudo find /var/www/html -type f -exec chmod 644 {} \;
+            # Garante que o Apache possa escrever em diretórios específicos, se necessário (ex: uploads)
+            # Exemplo: sudo chmod -R 775 /var/www/html/public/uploads
+            # Exemplo: sudo chown -R www-data:www-data /var/www/html/public/uploads
+
+            # Reinicia o Apache para aplicar quaisquer mudanças de configuração (opcional, mas pode ser útil)
+            sudo systemctl restart apache2

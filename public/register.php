@@ -1,4 +1,13 @@
-<?php if (session_status() == PHP_SESSION_NONE) { session_start(); } ?>
+<?php 
+if (session_status() == PHP_SESSION_NONE) { session_start(); }
+
+// Check if the form was submitted
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Include the handler for registration logic
+    // __DIR__ will point to public/, so ../src/auth/ is correct
+    require_once __DIR__ . '/../src/auth/handle_register.php';
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -101,7 +110,7 @@
         <?php endif; ?>
 
         <h2>Register</h2>
-        <form action="../src/auth/handle_register.php" method="POST">
+        <form action="register.php" method="POST">
             <div>
                 <label for="username">Username:</label>
                 <input type="text" id="username" name="username" required maxlength="50">

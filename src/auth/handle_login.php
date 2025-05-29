@@ -1,6 +1,6 @@
 <?php
-session_start();
-require_once '../db/connection.php'; // Step 1 & 2
+if (session_status() == PHP_SESSION_NONE) { session_start(); }
+require_once __DIR__ . '/../db/connection.php'; // Step 1 & 2
 
 // Step 3: Check if the request method is POST
 if ($_SERVER["REQUEST_METHOD"] !== "POST") {

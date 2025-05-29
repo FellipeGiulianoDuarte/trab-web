@@ -104,20 +104,21 @@
         <form action="../src/auth/handle_register.php" method="POST">
             <div>
                 <label for="username">Username:</label>
-                <input type="text" id="username" name="username" required>
+                <input type="text" id="username" name="username" required maxlength="50">
             </div>
             <div>
                 <label for="email">Email:</label>
-                <input type="email" id="email" name="email" required>
+                <input type="email" id="email" name="email" required maxlength="254">
                 <div id="email-error" class="error-message"></div>
             </div>
             <div>
                 <label for="password">Password:</label>
-                <input type="password" id="password" name="password" required>
+                <input type="password" id="password" name="password" required maxlength="72">
             </div>
             <div>
                 <label for="confirm_password">Confirm Password:</label>
-                <input type="password" id="confirm_password" name="confirm_password" required>
+                <input type="password" id="confirm_password" name="confirm_password" required maxlength="72">
+                <div id="password-match-error" class="error-message"></div>
             </div>
             <div>
                 <input type="submit" value="Register">
@@ -128,6 +129,9 @@
         const emailInput = document.getElementById('email');
         const emailError = document.getElementById('email-error');
         const form = document.querySelector('form');
+        const passwordInput = document.getElementById('password');
+        const confirmPasswordInput = document.getElementById('confirm_password');
+        const passwordMatchError = document.getElementById('password-match-error');
 
         emailInput.addEventListener('input', () => {
             if (emailInput.validity.typeMismatch || !isValidEmail(emailInput.value)) {
@@ -137,9 +141,30 @@
             }
         });
 
+        function checkPasswordMatch() {
+            if (passwordInput.value !== confirmPasswordInput.value) {
+                passwordMatchError.textContent = 'Passwords do not match.';
+                return false;
+            } else {
+                passwordMatchError.textContent = '';
+                return true;
+            }
+        }
+
+        confirmPasswordInput.addEventListener('input', checkPasswordMatch);
+        passwordInput.addEventListener('input', checkPasswordMatch);
+
         form.addEventListener('submit', (event) => {
+            let isValid = true;
             if (!isValidEmail(emailInput.value)) {
                 emailError.textContent = 'Please enter a valid email address.';
+                isValid = false;
+            }
+            if (!checkPasswordMatch()) {
+                isValid = false;
+            }
+
+            if (!isValid) {
                 event.preventDefault(); // Prevent form submission
             }
         });

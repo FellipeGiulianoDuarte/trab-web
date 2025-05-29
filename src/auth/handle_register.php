@@ -22,6 +22,24 @@ if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
     exit();
 }
 
+// Validate input lengths
+if (strlen($username) > 50) {
+    $_SESSION['error_message'] = "Username cannot exceed 50 characters.";
+    header("Location: ../../public/register.php");
+    exit();
+}
+if (strlen($email) > 254) {
+    $_SESSION['error_message'] = "Email cannot exceed 254 characters.";
+    header("Location: ../../public/register.php");
+    exit();
+}
+// Passwords can be up to 72 characters due to bcrypt limitations
+if (strlen($password) > 72) { 
+    $_SESSION['error_message'] = "Password cannot exceed 72 characters.";
+    header("Location: ../../public/register.php");
+    exit();
+}
+
 // Ensure all fields are filled
 if (empty($username) || empty($email) || empty($password) || empty($confirm_password)) {
     $_SESSION['error_message'] = "All fields are required.";

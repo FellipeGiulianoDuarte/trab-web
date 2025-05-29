@@ -22,43 +22,46 @@ jobs:
           sed -i "s|%%DB_PASSWORD_PROD%%|${{ secrets.DB_PASSWORD_PROD }}|g" src/db/connection.php
           sed -i "s|%%DB_NAME_PROD%%|${{ secrets.DB_NAME_PROD }}|g" src/db/connection.php
 
-      # 3. (NOVO) Limpa o diretório de destino na EC2 ANTES de copiar os novos arquivos
-      - name: Clean remote target directory
+      # 3. (AJUSTADO) Prepara o diretório de destino na EC2
+      - name: Prepare remote target directory
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.AWS_HOST }}
           username: ${{ secrets.AWS_USERNAME }}
           key: ${{ secrets.AWS_SSH_KEY }}
           script: |
-            echo "Limpando o conteúdo de /var/www/html/ no servidor usando sudo..."
-            # Garante que o diretório exista
+            echo "Preparando o diretório /var/www/html/ no servidor..."
+            # Garante que o diretório /var/www/html exista
             sudo mkdir -p /var/www/html
-            # Remove todo o conteúdo DENTRO de /var/www/html/
-            # -mindepth 1 garante que não tentemos deletar /var/www/html em si, apenas seu conteúdo
+            # Define o usuário do deploy (ex: ubuntu) como proprietário TEMPORARIAMENTE
+            # Isso permite que a próxima etapa (rsync como 'ubuntu') crie arquivos e pastas dentro de /var/www/html
+            sudo chown ${{ secrets.AWS_USERNAME }}:${{ secrets.AWS_USERNAME }} /var/www/html
+            # Limpa qualquer conteúdo restante dentro de /var/www/html usando sudo para garantir
             sudo find /var/www/html/ -mindepth 1 -delete
-            echo "Diretório /var/www/html/ limpo."
+            echo "Diretório /var/www/html/ limpo e propriedade ajustada para o usuário de deploy."
 
       # 4. Transfere os arquivos do projeto para a EC2
       - name: Deploy project files to EC2
         uses: easingthemes/ssh-deploy@v5.0.0
         with:
           SSH_PRIVATE_KEY: ${{ secrets.AWS_SSH_KEY }}
-          ARGS: "-avz --delete" # O --delete agora funcionará em um diretório limpo ou com arquivos que o usuário pode deletar
+          ARGS: "-avz --delete" 
           SOURCE: "./" 
           REMOTE_HOST: ${{ secrets.AWS_HOST }}
           REMOTE_USER: ${{ secrets.AWS_USERNAME }}
-          TARGET: "/var/www/html/"
+          TARGET: "/var/www/html/" # O rsync vai escrever aqui como o REMOTE_USER
           EXCLUDE: "/.git/, /.github/, /db_schema.sql, /README.md, /IMPLEMENTATION_GUIDE.md"
 
-      # 5. Ajusta as permissões na EC2 para o Apache
-      - name: Set permissions on EC2
+      # 5. Ajusta as permissões finais na EC2 para o Apache
+      - name: Set final permissions on EC2
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.AWS_HOST }}
           username: ${{ secrets.AWS_USERNAME }}
           key: ${{ secrets.AWS_SSH_KEY }}
           script: |
-            echo "Ajustando permissões finais dos arquivos no servidor..."
+            echo "Ajustando permissões finais dos arquivos para o Apache..."
+            # Agora, define www-data como proprietário de tudo DENTRO de /var/www/html
             sudo chown -R www-data:www-data /var/www/html
             sudo find /var/www/html -type d -exec chmod 755 {} \;
             sudo find /var/www/html -type f -exec chmod 644 {} \;

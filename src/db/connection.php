@@ -18,10 +18,10 @@ if (file_exists($dotenvPath)) {
     }
 }
 
-$servername = getenv('DB_SERVERNAME') ?: 'localhost'; // Load from environment or use default
-$username = getenv('DB_USERNAME') ?: 'root'; // Load from environment or use default
-$password = getenv('DB_PASSWORD');
-$dbname = getenv('DB_NAME') ?: 'game_platform'; // Load from environment or use default
+$servername = '%%DB_HOST%%';
+$username = '%%DB_USER_PROD%%';
+$password = '%%DB_PASSWORD_PROD%%';
+$dbname = '%%DB_NAME_PROD%%';
 
 // Create connection using mysqli
 $conn = new mysqli($servername, $username, $password, $dbname);

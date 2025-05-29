@@ -12,39 +12,39 @@ $confirm_password = $_POST['confirm_password'] ?? '';
 // Validate email format
 if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
     $_SESSION['error_message'] = "Invalid email format.";
-    header("Location: register.php");
+    header("Location: /register.php"); // Corrected path
     exit();
 }
 
 // Validate input lengths
 if (strlen($username) > 50) {
     $_SESSION['error_message'] = "Username cannot exceed 50 characters.";
-    header("Location: register.php");
+    header("Location: /register.php"); // Corrected path
     exit();
 }
 if (strlen($email) > 254) {
     $_SESSION['error_message'] = "Email cannot exceed 254 characters.";
-    header("Location: register.php");
+    header("Location: /register.php"); // Corrected path
     exit();
 }
 // Passwords can be up to 72 characters due to bcrypt limitations
 if (strlen($password) > 72) { 
     $_SESSION['error_message'] = "Password cannot exceed 72 characters.";
-    header("Location: register.php");
+    header("Location: /register.php"); // Corrected path
     exit();
 }
 
 // Ensure all fields are filled
 if (empty($username) || empty($email) || empty($password) || empty($confirm_password)) {
     $_SESSION['error_message'] = "All fields are required.";
-    header("Location: register.php");
+    header("Location: /register.php"); // Corrected path
     exit();
 }
 
 // Check if password and confirm_password match
 if ($password !== $confirm_password) {
     $_SESSION['error_message'] = "Passwords do not match.";
-    header("Location: register.php");
+    header("Location: /register.php"); // Corrected path
     exit();
 }
 
@@ -55,7 +55,7 @@ if ($stmt_check === false) {
     // Handle error, e.g., log it or display a generic error message
     error_log("Database error (prepare failed): " . $conn->error);
     $_SESSION['error_message'] = "An unexpected error occurred. Please try again later.";
-    header("Location: register.php");
+    header("Location: /register.php"); // Corrected path
     exit();
 }
 
@@ -66,7 +66,7 @@ $result_check = $stmt_check->get_result();
 if ($result_check->num_rows > 0) {
     $_SESSION['error_message'] = "Username or email already exists.";
     $stmt_check->close();
-    header("Location: register.php");
+    header("Location: /register.php"); // Corrected path
     exit();
 }
 $stmt_check->close();
@@ -79,7 +79,7 @@ $stmt_insert = $conn->prepare($sql_insert);
 if ($stmt_insert === false) {
     // Handle error
     $_SESSION['error_message'] = "Database error (prepare failed for insert): " . $conn->error;
-    header("Location: register.php");
+    header("Location: /register.php"); // Corrected path
     exit();
 }
 
@@ -90,14 +90,14 @@ if ($stmt_insert->execute()) {
     $_SESSION['success_message'] = "Registration successful! Please log in.";
     $stmt_insert->close();
     $conn->close();
-    header("Location: login.php");
+    header("Location: /login.php"); // Corrected path
     exit();
 } else {
     // Step 8: Redirect with error message if insert fails
     $_SESSION['error_message'] = "Registration failed. Please try again. Error: " . $stmt_insert->error;
     $stmt_insert->close();
     $conn->close();
-    header("Location: register.php");
+    header("Location: /register.php"); // Corrected path
     exit();
 }
 

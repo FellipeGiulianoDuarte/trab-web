@@ -67,7 +67,7 @@ if (session_status() == PHP_SESSION_NONE) {
                 <a href="game_page.php">Play Game</a>
                 <a href="scores.php">View Scores</a>
                 <a href="leagues.php">View Leagues</a>
-                <a href="../src/auth/logout.php" class="logout-link">Logout</a>
+                <a href="/src/auth/logout.php" class="logout-link">Logout</a> <!-- Corrected path -->
             </div>
         <?php else: ?>
             <h1>Welcome to the Game Platform!</h1>

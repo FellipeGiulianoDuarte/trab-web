@@ -3,8 +3,11 @@ if (session_status() == PHP_SESSION_NONE) { session_start(); }
 require_once __DIR__ . '/../db/connection.php'; // Step 1 & 2
 
 // Step 3: Check if the request method is POST
+// This check is relevant if the script is directly accessed,
+// but less so when included by login.php which already handles form submission.
+// However, keeping it provides an extra layer if direct access is attempted.
 if ($_SERVER["REQUEST_METHOD"] !== "POST") {
-    header("Location: ../../public/login.php");
+    header("Location: /login.php"); // Corrected path
     exit();
 }
 
@@ -15,7 +18,7 @@ $password = $_POST['password'] ?? '';
 // Step 5: Validate inputs
 if (empty($login_identifier) || empty($password)) {
     $_SESSION['error_message'] = "Both username/email and password are required.";
-    header("Location: ../../public/login.php");
+    header("Location: /login.php"); // Corrected path
     exit();
 }
 
@@ -29,7 +32,7 @@ if ($stmt === false) {
     // Handle database error (prepare failed)
     $_SESSION['error_message'] = "Database error. Please try again later. (Code: P1)";
     error_log("Prepare failed: (" . $conn->errno . ") " . $conn->error); // Log the error
-    header("Location: ../../public/login.php");
+    header("Location: /login.php"); // Corrected path
     exit();
 }
 
@@ -41,7 +44,7 @@ if (!$stmt->execute()) {
     error_log("Execute failed: (" . $stmt->errno . ") " . $stmt->error); // Log the error
     $stmt->close();
     $conn->close();
-    header("Location: ../../public/login.php");
+    header("Location: /login.php"); // Corrected path
     exit();
 }
 
@@ -57,7 +60,7 @@ if ($result->num_rows === 1) {
         $_SESSION['username'] = $user['username'];
         
         // Redirect to a protected page (e.g., index.php or a game page)
-        header("Location: ../../public/index.php"); 
+        header("Location: /index.php"); // Corrected path
         $stmt->close();
         $conn->close();
         exit();
@@ -66,7 +69,7 @@ if ($result->num_rows === 1) {
         $_SESSION['error_message'] = "Invalid credentials.";
         $stmt->close();
         $conn->close();
-        header("Location: ../../public/login.php");
+        header("Location: /login.php"); // Corrected path
         exit();
     }
 } else {
@@ -74,7 +77,7 @@ if ($result->num_rows === 1) {
     $_SESSION['error_message'] = "Invalid credentials.";
     $stmt->close();
     $conn->close();
-    header("Location: ../../public/login.php");
+    header("Location: /login.php"); // Corrected path
     exit();
 }
 
@@ -82,6 +85,6 @@ if ($result->num_rows === 1) {
 $stmt->close();
 $conn->close();
 $_SESSION['error_message'] = "An unexpected error occurred.";
-header("Location: ../../public/login.php");
+header("Location: /login.php"); // Corrected path
 exit();
 ?>

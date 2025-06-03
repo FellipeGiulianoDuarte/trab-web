@@ -53,9 +53,7 @@ if (strpos($keyword, ' ') !== false) {
     exit;
 }
 
-// Sanitize inputs
-$league_name = htmlspecialchars($league_name, ENT_QUOTES, 'UTF-8');
-$keyword = htmlspecialchars($keyword, ENT_QUOTES, 'UTF-8');
+// Store raw inputs in the database. Ensure output is sanitized when rendering.
 
 // Check if keyword already exists
 $check_keyword_query = "SELECT id FROM leagues WHERE keyword = ?";

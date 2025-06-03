@@ -14,9 +14,7 @@ $user_id = $_SESSION['user_id'];
 
 // Validate input
 if ($league_id <= 0 || empty($keyword)) {
-    $_SESSION['league_error'] = 'ID da liga e palavra-chave são obrigatórios.';
-    header('Location: ../../public/leagues.php');
-    exit;
+    handleErrorAndRedirect('ID da liga e palavra-chave são obrigatórios.', '../../public/leagues.php');
 }
 
 // Check if league exists and verify keyword
@@ -35,7 +33,7 @@ if ($league_result->num_rows === 0) {
 $league = $league_result->fetch_assoc();
 
 // Verify keyword
-if ($league['keyword'] !== $keyword) {
+if (htmlspecialchars_decode($league['keyword']) !== $keyword) {
     $_SESSION['league_error'] = 'Palavra-chave incorreta para a liga "' . htmlspecialchars($league['name']) . '".';
     header('Location: ../../public/leagues.php');
     exit;

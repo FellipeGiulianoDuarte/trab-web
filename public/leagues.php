@@ -20,10 +20,12 @@ $user_id = $_SESSION['user_id'];
 
 // Fetch available leagues
 $leagues_query = "SELECT l.id, l.name, l.created_at, u.username as creator_name,
-                  (SELECT COUNT(*) FROM league_members lm WHERE lm.league_id = l.id) as member_count,
-                  (SELECT COUNT(*) FROM league_members lm WHERE lm.league_id = l.id AND lm.user_id = ?) as is_member
-                  FROM leagues l 
-                  JOIN users u ON l.creator_user_id = u.id 
+                  COUNT(lm.user_id) as member_count,
+                  COUNT(CASE WHEN lm.user_id = ? THEN 1 END) as is_member
+                  FROM leagues l
+                  JOIN users u ON l.creator_user_id = u.id
+                  LEFT JOIN league_members lm ON l.id = lm.league_id
+                  GROUP BY l.id, l.name, l.created_at, u.username
                   ORDER BY l.created_at DESC";
 $stmt = $conn->prepare($leagues_query);
 $stmt->bind_param("i", $user_id);
@@ -285,7 +287,8 @@ $user_leagues_result = $stmt2->get_result();
                             <?php else: ?>
                                 <form action="../src/league_logic/join_league.php" method="POST" class="join-form" onsubmit="return confirm('Tem certeza que deseja entrar nesta liga?');">
                                     <input type="hidden" name="league_id" value="<?php echo $league['id']; ?>">
-                                    <input type="text" name="keyword" placeholder="Palavra-chave" required maxlength="50" autocomplete="off">
+                                    <label for="join_keyword_<?php echo $league['id']; ?>">Palavra-chave</label>
+                                    <input type="text" id="join_keyword_<?php echo $league['id']; ?>" name="keyword" placeholder="Palavra-chave" required maxlength="50" autocomplete="off">
                                     <button type="submit" class="btn btn-primary">Entrar</button>
                                 </form>
                             <?php endif; ?>

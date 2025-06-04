@@ -1,18 +1,12 @@
 <?php 
 if (session_status() == PHP_SESSION_NONE) { session_start(); }
-
-// Check if the form was submitted
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Include the handler for login logic
-    require_once __DIR__ . '/../src/auth/handle_login.php';
-}
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
+    <title>Register</title>
     <style>
         body {
             font-family: sans-serif;
@@ -40,6 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             font-weight: bold;
         }
         input[type="text"],
+        input[type="email"],
         input[type="password"] {
             width: calc(100% - 20px);
             padding: 10px;
@@ -49,7 +44,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             box-sizing: border-box;
         }
         input[type="submit"] {
-            background-color: #007bff;
+            background-color: #28a745;
             color: white;
             padding: 10px 15px;
             border: none;
@@ -59,7 +54,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             font-size: 16px;
         }
         input[type="submit"]:hover {
-            background-color: #0056b3;
+            background-color: #218838;
         }
         .alert {
             padding: 15px;
@@ -82,7 +77,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </head>
 <body>
     <div class="container">
-        <h2>Login</h2>
+        <h2>Register</h2>
 
         <?php if (isset($_SESSION['error_message'])): ?>
             <div class="alert alert-danger">
@@ -102,21 +97,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
         <?php endif; ?>
 
-        <form action="login.php" method="POST">
+        <form action="/register" method="POST">
             <div>
-                <label for="login_identifier">Username or Email:</label>
-                <input type="text" id="login_identifier" name="login_identifier" required>
+                <label for="username">Username:</label>
+                <input type="text" id="username" name="username" required maxlength="50">
+            </div>
+            <div>
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" required maxlength="255">
             </div>
             <div>
                 <label for="password">Password:</label>
                 <input type="password" id="password" name="password" required>
             </div>
             <div>
-                <input type="submit" value="Login">
+                <label for="confirm_password">Confirm Password:</label>
+                <input type="password" id="confirm_password" name="confirm_password" required>
+            </div>
+            <div>
+                <input type="submit" value="Register">
             </div>
         </form>
         <p style="text-align: center; margin-top: 15px;">
-            Don't have an account? <a href="register.php">Register here</a>
+            Already have an account? <a href="/login">Login here</a>
         </p>
     </div>
 </body>

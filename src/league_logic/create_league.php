@@ -3,7 +3,7 @@ require_once __DIR__ . '/../auth/auth_check.php';
 require_once __DIR__ . '/../db/connection.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    header('Location: ../../public/leagues.php');
+    header('Location: leagues.php');
     exit;
 }
 
@@ -15,41 +15,41 @@ $creator_user_id = $_SESSION['user_id'];
 // Validate input
 if (empty($league_name) || empty($keyword)) {
     $_SESSION['league_error'] = 'Nome da liga e palavra-chave são obrigatórios.';
-    header('Location: ../../public/leagues.php');
+    header('Location: leagues.php');
     exit;
 }
 
 // Validate minimum lengths
 if (strlen($league_name) < 3) {
     $_SESSION['league_error'] = 'Nome da liga deve ter pelo menos 3 caracteres.';
-    header('Location: ../../public/leagues.php');
+    header('Location: leagues.php');
     exit;
 }
 
 if (strlen($keyword) < 3) {
     $_SESSION['league_error'] = 'Palavra-chave deve ter pelo menos 3 caracteres.';
-    header('Location: ../../public/leagues.php');
+    header('Location: leagues.php');
     exit;
 }
 
 // Validate league name length
 if (strlen($league_name) > 255) {
     $_SESSION['league_error'] = 'Nome da liga deve ter no máximo 255 caracteres.';
-    header('Location: ../../public/leagues.php');
+    header('Location: leagues.php');
     exit;
 }
 
 // Validate keyword length and format
 if (strlen($keyword) > 50) {
     $_SESSION['league_error'] = 'Palavra-chave deve ter no máximo 50 caracteres.';
-    header('Location: ../../public/leagues.php');
+    header('Location: leagues.php');
     exit;
 }
 
 // Check if keyword contains spaces
 if (strpos($keyword, ' ') !== false) {
     $_SESSION['league_error'] = 'Palavra-chave não deve conter espaços.';
-    header('Location: ../../public/leagues.php');
+    header('Location: leagues.php');
     exit;
 }
 

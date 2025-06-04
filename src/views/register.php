@@ -100,11 +100,11 @@ if (session_status() == PHP_SESSION_NONE) { session_start(); }
         <form action="/register" method="POST">
             <div>
                 <label for="username">Username:</label>
-                <input type="text" id="username" name="username" required>
+                <input type="text" id="username" name="username" required maxlength="50">
             </div>
             <div>
                 <label for="email">Email:</label>
-                <input type="email" id="email" name="email" required>
+                <input type="email" id="email" name="email" required maxlength="255">
             </div>
             <div>
                 <label for="password">Password:</label>

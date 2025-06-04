@@ -59,9 +59,22 @@ class Router {
         return false;
     }
     
-    private function matchPath($routePath, $uri) {
-        // Simple exact match for now
-        return $routePath === $uri;
+    private function matchPath($routePath, $uri, &$params = []) {
+        // Convert route path to regex for dynamic segments
+        $pattern = preg_replace('/\{(\w+)\}/', '(?P<\1>[^/]+)', $routePath);
+        $pattern = '#^' . $pattern . '$#';
+        
+        // Match the URI against the pattern
+        if (preg_match($pattern, $uri, $matches)) {
+            // Extract named parameters
+            foreach ($matches as $key => $value) {
+                if (!is_int($key)) {
+                    $params[$key] = $value;
+                }
+            }
+            return true;
+        }
+        return false;
     }
     
     private function includeFile($file) {

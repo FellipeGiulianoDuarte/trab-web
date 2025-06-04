@@ -253,9 +253,7 @@ $user_leagues_result = $stmt2->get_result();
                             <?php if ($league['creator_name'] === $_SESSION['username']): ?>
                                 <p><strong>Palavra-chave:</strong> <code><?php echo htmlspecialchars($league['keyword']); ?></code></p>
                             <?php endif; ?>
-                        </div>                        <div class="league-actions">
-                            <a href="league_scores.php?id=<?php echo $league['id']; ?>" class="btn btn-primary">Ver Placar</a>
-                            <?php if ($league['creator_name'] !== $_SESSION['username']): ?>
+                        </div>                        <div class="league-actions">                            <a href="league_scores.php?id=<?php echo $league['id']; ?>" class="btn btn-primary">Ver Placar</a>                            <?php if ($league['creator_name'] !== $_SESSION['username']): ?>
                                 <form action="../src/league_logic/leave_league.php" method="POST" style="display: inline;" onsubmit="return confirm('Tem certeza que deseja sair desta liga?');">
                                     <input type="hidden" name="league_id" value="<?php echo $league['id']; ?>">
                                     <button type="submit" class="btn btn-secondary">Sair da Liga</button>
@@ -281,8 +279,7 @@ $user_leagues_result = $stmt2->get_result();
                             <p><strong>Membros:</strong> <?php echo $league['member_count']; ?></p>
                             <p><strong>Criada em:</strong> <?php echo date('d/m/Y H:i', strtotime($league['created_at'])); ?></p>
                         </div>
-                        <div class="league-actions">
-                            <?php if ($league['is_member'] > 0): ?>
+                        <div class="league-actions">                            <?php if ($league['is_member'] > 0): ?>
                                 <span class="btn btn-success">✓ Membro</span>
                             <?php else: ?>
                                 <form action="../src/league_logic/join_league.php" method="POST" class="join-form" onsubmit="return confirm('Tem certeza que deseja entrar nesta liga?');">

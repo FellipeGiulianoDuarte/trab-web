@@ -206,8 +206,7 @@ $user_leagues_result = $stmt2->get_result();
             <div class="message error"><?php echo htmlspecialchars($error); ?></div>
         <?php endif; ?>        <!-- Create League Section -->
         <div class="league-section" id="create-league">
-            <h2>Criar Nova Liga</h2>
-            <form action="create_league.php" method="POST" class="league-form" onsubmit="return validateLeagueForm();">
+            <h2>Criar Nova Liga</h2>            <form action="/leagues/create" method="POST" class="league-form" onsubmit="return validateLeagueForm();">
                 <input type="text" name="league_name" id="league_name" placeholder="Nome da Liga" required maxlength="255" minlength="3">
                 <input type="text" name="keyword" id="keyword" placeholder="Palavra-chave (para entrada)" required maxlength="50" minlength="3" autocomplete="off">
                 <small style="color: #666;">A palavra-chave será necessária para outros jogadores entrarem na sua liga.</small>
@@ -253,8 +252,7 @@ $user_leagues_result = $stmt2->get_result();
                             <?php if ($league['creator_name'] === $_SESSION['username']): ?>
                                 <p><strong>Palavra-chave:</strong> <code><?php echo htmlspecialchars($league['keyword']); ?></code></p>
                             <?php endif; ?>
-                        </div>                        <div class="league-actions">                            <a href="league_scores.php?id=<?php echo $league['id']; ?>" class="btn btn-primary">Ver Placar</a>                            <?php if ($league['creator_name'] !== $_SESSION['username']): ?>
-                                <form action="leave_league.php" method="POST" style="display: inline;" onsubmit="return confirm('Tem certeza que deseja sair desta liga?');">
+                        </div>                        <div class="league-actions">                            <a href="league_scores.php?id=<?php echo $league['id']; ?>" class="btn btn-primary">Ver Placar</a>                            <?php if ($league['creator_name'] !== $_SESSION['username']): ?>                                <form action="/leagues/leave" method="POST" style="display: inline;" onsubmit="return confirm('Tem certeza que deseja sair desta liga?');">
                                     <input type="hidden" name="league_id" value="<?php echo $league['id']; ?>">
                                     <button type="submit" class="btn btn-secondary">Sair da Liga</button>
                                 </form>
@@ -280,8 +278,7 @@ $user_leagues_result = $stmt2->get_result();
                             <p><strong>Criada em:</strong> <?php echo date('d/m/Y H:i', strtotime($league['created_at'])); ?></p>
                         </div>
                         <div class="league-actions">                            <?php if ($league['is_member'] > 0): ?>
-                                <span class="btn btn-success">✓ Membro</span>                            <?php else: ?>
-                                <form action="join_league.php" method="POST" class="join-form" onsubmit="return confirm('Tem certeza que deseja entrar nesta liga?');">
+                                <span class="btn btn-success">✓ Membro</span>                            <?php else: ?>                                <form action="/leagues/join" method="POST" class="join-form" onsubmit="return confirm('Tem certeza que deseja entrar nesta liga?');">
                                     <input type="hidden" name="league_id" value="<?php echo $league['id']; ?>">
                                     <label for="join_keyword_<?php echo $league['id']; ?>">Palavra-chave</label>
                                     <input type="text" id="join_keyword_<?php echo $league['id']; ?>" name="keyword" placeholder="Palavra-chave" required maxlength="50" autocomplete="off">
@@ -295,10 +292,8 @@ $user_leagues_result = $stmt2->get_result();
             <?php else: ?>
                 <p>Nenhuma liga disponível no momento. <a href="#create-league">Crie a primeira liga!</a></p>
             <?php endif; ?>
-        </div>
-
-        <div style="text-align: center; margin-top: 30px;">
-            <a href="index.php" class="btn btn-secondary">Voltar ao Menu Principal</a>
+        </div>        <div style="text-align: center; margin-top: 30px;">
+            <a href="/" class="btn btn-secondary">Voltar ao Menu Principal</a>
         </div>
     </div>
 </body>

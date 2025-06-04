@@ -1,0 +1,18 @@
+RewriteEngine On
+
+# Redirect to remove .php extension from URLs
+RewriteCond %{THE_REQUEST} /public/([^.\s]+)\.php [NC]
+RewriteRule ^ /%1? [NC,L,R=301]
+
+# Internally rewrite extensionless URLs to .php files
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^([^/]+)/?$ $1.php [L,QSA]
+
+# Send all other requests through index.php (our router)
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_URI} !^/css/
+RewriteCond %{REQUEST_URI} !^/js/
+RewriteCond %{REQUEST_URI} !^/images/
+RewriteRule ^(.*)$ index.php [QSA,L]

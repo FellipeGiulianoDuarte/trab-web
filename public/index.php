@@ -1,7 +1,134 @@
 <?php
+// Single Entry Point - Main Router
 if (session_status() == PHP_SESSION_NONE) {
     session_start();
 }
+
+// Include dependencies
+require_once __DIR__ . '/../src/Router.php';
+require_once __DIR__ . '/../src/db/connection.php';
+
+// Create router instance
+$router = new Router();
+
+// Get request info
+$request_uri = $_SERVER['REQUEST_URI'];
+$request_method = $_SERVER['REQUEST_METHOD'];
+
+// Static pages
+$router->addRoute('GET', '/login', function() {
+    include __DIR__ . '/../src/views/login.php';
+});
+
+$router->addRoute('GET', '/register', function() {
+    include __DIR__ . '/../src/views/register.php';
+});
+
+$router->addRoute('GET', '/leagues', function() {
+    include __DIR__ . '/leagues.php';
+});
+
+$router->addRoute('GET', '/league_scores.php', function() {
+    include __DIR__ . '/league_scores.php';
+});
+
+// League scores without .php extension for cleaner URLs
+$router->addRoute('GET', '/league_scores', function() {
+    include __DIR__ . '/league_scores.php';
+});
+
+// Backward compatibility routes
+$router->addRoute('GET', '/login.php', function() {
+    header('Location: /login', true, 301);
+    exit;
+});
+
+$router->addRoute('GET', '/register.php', function() {
+    header('Location: /register', true, 301);
+    exit;
+});
+
+$router->addRoute('GET', '/leagues.php', function() {
+    header('Location: /leagues', true, 301);
+    exit;
+});
+
+// Placeholder routes for missing pages
+$router->addRoute('GET', '/game_page.php', function() {
+    echo "<h1>Game Page - Coming Soon!</h1><p><a href='/'>Back to Home</a></p>";
+});
+
+$router->addRoute('GET', '/game_page', function() {
+    echo "<h1>Game Page - Coming Soon!</h1><p><a href='/'>Back to Home</a></p>";
+});
+
+$router->addRoute('GET', '/scores.php', function() {
+    echo "<h1>Scores Page - Coming Soon!</h1><p><a href='/'>Back to Home</a></p>";
+});
+
+$router->addRoute('GET', '/scores', function() {
+    echo "<h1>Scores Page - Coming Soon!</h1><p><a href='/'>Back to Home</a></p>";
+});
+
+// Auth routes
+$router->addRoute('POST', '/login', function() use ($conn) {
+    require_once __DIR__ . '/../src/controllers/AuthController.php';
+    $controller = new AuthController($conn);
+    $controller->login();
+});
+
+$router->addRoute('POST', '/register', function() use ($conn) {
+    require_once __DIR__ . '/../src/controllers/AuthController.php';
+    $controller = new AuthController($conn);
+    $controller->register();
+});
+
+$router->addRoute('GET', '/logout', function() use ($conn) {
+    require_once __DIR__ . '/../src/controllers/AuthController.php';
+    $controller = new AuthController($conn);
+    $controller->logout();
+});
+
+// League routes
+$router->addRoute('POST', '/leagues/create', function() use ($conn) {
+    require_once __DIR__ . '/../src/auth/auth_check.php';
+    require_once __DIR__ . '/../src/controllers/LeagueController.php';
+    $controller = new LeagueController($conn);
+    $controller->create();
+});
+
+$router->addRoute('POST', '/leagues/join', function() use ($conn) {
+    require_once __DIR__ . '/../src/auth/auth_check.php';
+    require_once __DIR__ . '/../src/controllers/LeagueController.php';
+    $controller = new LeagueController($conn);
+    $controller->join();
+});
+
+$router->addRoute('POST', '/leagues/leave', function() use ($conn) {
+    require_once __DIR__ . '/../src/auth/auth_check.php';
+    require_once __DIR__ . '/../src/controllers/LeagueController.php';
+    $controller = new LeagueController($conn);
+    $controller->leave();
+});
+
+// Try to dispatch the request
+$dispatched = $router->dispatch($request_uri, $request_method);
+
+// If no route was matched and it's the root path, show the homepage
+if (!$dispatched && ($request_uri === '/' || $request_uri === '')) {
+    // Close database connection before showing homepage
+    if (isset($conn)) {
+        $conn->close();
+    }
+    // Don't exit here, let the homepage render below
+} else {
+    // Route was handled, close connection and exit
+    if (isset($conn)) {
+        $conn->close();
+    }
+    exit;
+}
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -62,19 +189,17 @@ if (session_status() == PHP_SESSION_NONE) {
             <h1>
                 Welcome, <?php echo isset($_SESSION['username']) ? htmlspecialchars($_SESSION['username']) : 'User'; ?>!
             </h1>
-            <p>What would you like to do?</p>
-            <div class="nav-links">
-                <a href="game_page.php">Play Game</a>
-                <a href="scores.php">View Scores</a>
-                <a href="leagues.php">View Leagues</a>
-                <a href="logout.php" class="logout-link">Logout</a> <!-- Corrected path to public logout handler -->
+            <p>What would you like to do?</p>            <div class="nav-links">
+                <a href="/game_page">Play Game</a>
+                <a href="/scores">View Scores</a>
+                <a href="/leagues">View Leagues</a>
+                <a href="/logout" class="logout-link">Logout</a>
             </div>
         <?php else: ?>
             <h1>Welcome to the Game Platform!</h1>
-            <p>Please log in or register to continue.</p>
-            <div class="nav-links">
-                <a href="login.php">Login</a>
-                <a href="register.php">Register</a>
+            <p>Please log in or register to continue.</p>            <div class="nav-links">
+                <a href="/login">Login</a>
+                <a href="/register">Register</a>
             </div>
         <?php endif; ?>
     </div>

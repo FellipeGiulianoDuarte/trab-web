@@ -9,7 +9,9 @@ class Router {
             'path' => $path,
             'handler' => $handler
         ];
-    }    public function dispatch($uri, $method) {
+    }
+    
+    public function dispatch($uri, $method) {
         // Remove query string from URI
         $uri = parse_url($uri, PHP_URL_PATH);
         

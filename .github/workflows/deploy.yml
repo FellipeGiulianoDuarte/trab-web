@@ -20,10 +20,10 @@ jobs:
       # 2. Atualiza o arquivo de conexão com os secrets
       - name: Update connection.php with secrets
         run: |
-          sed -i "s|%%DB_HOST%%|${{ secrets.DB_HOST }}|g" src/db/connection.php
-          sed -i "s|%%DB_USER_PROD%%|${{ secrets.DB_USER_PROD }}|g" src/db/connection.php
-          sed -i "s|%%DB_PASSWORD_PROD%%|${{ secrets.DB_PASSWORD_PROD }}|g" src/db/connection.php
-          sed -i "s|%%DB_NAME_PROD%%|${{ secrets.DB_NAME_PROD }}|g" src/db/connection.php
+          sed -i "s|%%DB_HOST%%|${{ secrets.DB_HOST }}|g" public/backend/db/connection.php
+          sed -i "s|%%DB_USER_PROD%%|${{ secrets.DB_USER_PROD }}|g" public/backend/db/connection.php
+          sed -i "s|%%DB_PASSWORD_PROD%%|${{ secrets.DB_PASSWORD_PROD }}|g" public/backend/db/connection.php
+          sed -i "s|%%DB_NAME_PROD%%|${{ secrets.DB_NAME_PROD }}|g" public/backend/db/connection.php
 
       # 3. (AJUSTADO) Prepara o diretório de destino na EC2
       - name: Prepare remote target directory

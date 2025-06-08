@@ -16,6 +16,37 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Update connection.php with secrets (before deploy)
+        run: |
+          echo "🔧 Updating database configuration locally before deploy..."
+          
+          # Check if the file exists
+          if [ ! -f "public/backend/db/connection.php" ]; then
+            echo "❌ Error: connection.php file not found locally!"
+            ls -la public/backend/db/
+            exit 1
+          fi
+          
+          echo "📋 Original file content (first 10 lines):"
+          head -n 10 public/backend/db/connection.php
+          
+          echo "🔄 Replacing placeholders locally..."
+          sed -i "s|%%DB_HOST%%|${{ secrets.DB_HOST }}|g" public/backend/db/connection.php
+          sed -i "s|%%DB_USER_PROD%%|${{ secrets.DB_USER_PROD }}|g" public/backend/db/connection.php
+          sed -i "s|%%DB_PASSWORD_PROD%%|${{ secrets.DB_PASSWORD_PROD }}|g" public/backend/db/connection.php
+          sed -i "s|%%DB_NAME_PROD%%|${{ secrets.DB_NAME_PROD }}|g" public/backend/db/connection.php
+          
+          echo "📋 Updated file content (first 10 lines):"
+          head -n 10 public/backend/db/connection.php
+          
+          # Verify that placeholders were actually replaced
+          if grep -q "%%DB_HOST%%" public/backend/db/connection.php; then
+            echo "❌ Error: DB_HOST placeholder still exists!"
+            exit 1
+          fi
+          
+          echo "✅ Database configuration updated successfully locally!"
+
       - name: Prepare remote target directory
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -40,57 +71,51 @@ jobs:
           TARGET: "/var/www/html/"
           EXCLUDE: "/.git/, /.github/, /db_schema.sql, /README.md, /IMPLEMENTATION_GUIDE.md"
 
-      - name: Update connection.php with secrets
+      - name: Verify database configuration was deployed correctly
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.AWS_HOST }}
           username: ${{ secrets.AWS_USERNAME }}
           key: ${{ secrets.AWS_SSH_KEY }}
           script: |
-            echo "🔧 Updating database configuration..."
+            echo "🔍 Verifying database configuration..."
             
-            # Check if the file exists
-            if [ ! -f "/var/www/html/public/backend/db/connection.php" ]; then
+            CONFIG_FILE="/var/www/html/public/backend/db/connection.php"
+            
+            if [ ! -f "$CONFIG_FILE" ]; then
               echo "❌ Error: connection.php file not found!"
-              ls -la /var/www/html/public/backend/db/
               exit 1
             fi
             
-            echo "📋 Original file content (first 10 lines):"
-            head -n 10 /var/www/html/public/backend/db/connection.php
+            echo "📋 Deployed file content (first 10 lines):"
+            head -n 10 "$CONFIG_FILE"
             
-            echo "🔄 Replacing placeholders..."
-            sed -i "s|%%DB_HOST%%|${{ secrets.DB_HOST }}|g" /var/www/html/public/backend/db/connection.php
-            sed -i "s|%%DB_USER_PROD%%|${{ secrets.DB_USER_PROD }}|g" /var/www/html/public/backend/db/connection.php
-            sed -i "s|%%DB_PASSWORD_PROD%%|${{ secrets.DB_PASSWORD_PROD }}|g" /var/www/html/public/backend/db/connection.php
-            sed -i "s|%%DB_NAME_PROD%%|${{ secrets.DB_NAME_PROD }}|g" /var/www/html/public/backend/db/connection.php
-            
-            echo "📋 Updated file content (first 10 lines):"
-            head -n 10 /var/www/html/public/backend/db/connection.php
-            
-            # Verify that placeholders were actually replaced
-            if grep -q "%%DB_HOST%%" /var/www/html/public/backend/db/connection.php; then
-              echo "❌ Error: DB_HOST placeholder still exists!"
-              exit 1
+            # Check if placeholders still exist
+            if grep -q "%%DB_HOST%%" "$CONFIG_FILE"; then
+              echo "❌ Error: DB_HOST placeholder still exists after deploy!"
+              echo "🔧 Applying manual fix..."
+              sed -i "s|%%DB_HOST%%|${{ secrets.DB_HOST }}|g" "$CONFIG_FILE"
             fi
             
-            if grep -q "%%DB_USER_PROD%%" /var/www/html/public/backend/db/connection.php; then
-              echo "❌ Error: DB_USER_PROD placeholder still exists!"
-              exit 1
+            if grep -q "%%DB_USER_PROD%%" "$CONFIG_FILE"; then
+              echo "❌ Error: DB_USER_PROD placeholder still exists after deploy!"
+              echo "🔧 Applying manual fix..."
+              sed -i "s|%%DB_USER_PROD%%|${{ secrets.DB_USER_PROD }}|g" "$CONFIG_FILE"
             fi
             
-            if grep -q "%%DB_PASSWORD_PROD%%" /var/www/html/public/backend/db/connection.php; then
-              echo "❌ Error: DB_PASSWORD_PROD placeholder still exists!"
-              exit 1
+            if grep -q "%%DB_PASSWORD_PROD%%" "$CONFIG_FILE"; then
+              echo "❌ Error: DB_PASSWORD_PROD placeholder still exists after deploy!"
+              echo "🔧 Applying manual fix..."
+              sed -i "s|%%DB_PASSWORD_PROD%%|${{ secrets.DB_PASSWORD_PROD }}|g" "$CONFIG_FILE"
             fi
             
-            if grep -q "%%DB_NAME_PROD%%" /var/www/html/public/backend/db/connection.php; then
-              echo "❌ Error: DB_NAME_PROD placeholder still exists!"
-              exit 1
+            if grep -q "%%DB_NAME_PROD%%" "$CONFIG_FILE"; then
+              echo "❌ Error: DB_NAME_PROD placeholder still exists after deploy!"
+              echo "🔧 Applying manual fix..."
+              sed -i "s|%%DB_NAME_PROD%%|${{ secrets.DB_NAME_PROD }}|g" "$CONFIG_FILE"
             fi
             
-            echo "✅ Database configuration updated successfully!"
-            echo "✅ All placeholders replaced correctly!"
+            echo "✅ Database configuration verified and fixed if needed!"
 
       - name: Reset database with new schema
         uses: appleboy/ssh-action@v1.0.3

@@ -16,13 +16,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Update connection.php with secrets
-        run: |
-          sed -i "s|%%DB_HOST%%|${{ secrets.DB_HOST }}|g" public/backend/db/connection.php
-          sed -i "s|%%DB_USER_PROD%%|${{ secrets.DB_USER_PROD }}|g" public/backend/db/connection.php
-          sed -i "s|%%DB_PASSWORD_PROD%%|${{ secrets.DB_PASSWORD_PROD }}|g" public/backend/db/connection.php
-          sed -i "s|%%DB_NAME_PROD%%|${{ secrets.DB_NAME_PROD }}|g" public/backend/db/connection.php
-
       - name: Prepare remote target directory
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -46,6 +39,20 @@ jobs:
           REMOTE_USER: ${{ secrets.AWS_USERNAME }}
           TARGET: "/var/www/html/"
           EXCLUDE: "/.git/, /.github/, /db_schema.sql, /README.md, /IMPLEMENTATION_GUIDE.md"
+
+      - name: Update connection.php with secrets
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.AWS_HOST }}
+          username: ${{ secrets.AWS_USERNAME }}
+          key: ${{ secrets.AWS_SSH_KEY }}
+          script: |
+            echo "🔧 Updating database configuration..."
+            sed -i "s|%%DB_HOST%%|${{ secrets.DB_HOST }}|g" /var/www/html/public/backend/db/connection.php
+            sed -i "s|%%DB_USER_PROD%%|${{ secrets.DB_USER_PROD }}|g" /var/www/html/public/backend/db/connection.php
+            sed -i "s|%%DB_PASSWORD_PROD%%|${{ secrets.DB_PASSWORD_PROD }}|g" /var/www/html/public/backend/db/connection.php
+            sed -i "s|%%DB_NAME_PROD%%|${{ secrets.DB_NAME_PROD }}|g" /var/www/html/public/backend/db/connection.php
+            echo "✅ Database configuration updated"
 
       - name: Reset database with new schema
         uses: appleboy/ssh-action@v1.0.3

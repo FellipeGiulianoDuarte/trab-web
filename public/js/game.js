@@ -124,13 +124,13 @@ function handleInput(event) {
                 wordDisplay.style.backgroundColor = '#4CAF50';
                 setTimeout(() => {
                     wordDisplay.style.backgroundColor = 'transparent';
-                }, 200);
+                }, 100);
             } else {
                 // Wrong answer - visual feedback
                 wordDisplay.style.backgroundColor = '#f44336';
                 setTimeout(() => {
                     wordDisplay.style.backgroundColor = 'transparent';
-                }, 200);
+                }, 100);
             }
             
             // Clear input and generate new word

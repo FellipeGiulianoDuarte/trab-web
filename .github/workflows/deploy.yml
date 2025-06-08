@@ -48,11 +48,49 @@ jobs:
           key: ${{ secrets.AWS_SSH_KEY }}
           script: |
             echo "🔧 Updating database configuration..."
+            
+            # Check if the file exists
+            if [ ! -f "/var/www/html/public/backend/db/connection.php" ]; then
+              echo "❌ Error: connection.php file not found!"
+              ls -la /var/www/html/public/backend/db/
+              exit 1
+            fi
+            
+            echo "📋 Original file content (first 10 lines):"
+            head -n 10 /var/www/html/public/backend/db/connection.php
+            
+            echo "🔄 Replacing placeholders..."
             sed -i "s|%%DB_HOST%%|${{ secrets.DB_HOST }}|g" /var/www/html/public/backend/db/connection.php
             sed -i "s|%%DB_USER_PROD%%|${{ secrets.DB_USER_PROD }}|g" /var/www/html/public/backend/db/connection.php
             sed -i "s|%%DB_PASSWORD_PROD%%|${{ secrets.DB_PASSWORD_PROD }}|g" /var/www/html/public/backend/db/connection.php
             sed -i "s|%%DB_NAME_PROD%%|${{ secrets.DB_NAME_PROD }}|g" /var/www/html/public/backend/db/connection.php
-            echo "✅ Database configuration updated"
+            
+            echo "📋 Updated file content (first 10 lines):"
+            head -n 10 /var/www/html/public/backend/db/connection.php
+            
+            # Verify that placeholders were actually replaced
+            if grep -q "%%DB_HOST%%" /var/www/html/public/backend/db/connection.php; then
+              echo "❌ Error: DB_HOST placeholder still exists!"
+              exit 1
+            fi
+            
+            if grep -q "%%DB_USER_PROD%%" /var/www/html/public/backend/db/connection.php; then
+              echo "❌ Error: DB_USER_PROD placeholder still exists!"
+              exit 1
+            fi
+            
+            if grep -q "%%DB_PASSWORD_PROD%%" /var/www/html/public/backend/db/connection.php; then
+              echo "❌ Error: DB_PASSWORD_PROD placeholder still exists!"
+              exit 1
+            fi
+            
+            if grep -q "%%DB_NAME_PROD%%" /var/www/html/public/backend/db/connection.php; then
+              echo "❌ Error: DB_NAME_PROD placeholder still exists!"
+              exit 1
+            fi
+            
+            echo "✅ Database configuration updated successfully!"
+            echo "✅ All placeholders replaced correctly!"
 
       - name: Reset database with new schema
         uses: appleboy/ssh-action@v1.0.3

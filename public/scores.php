@@ -121,11 +121,9 @@ try {
     
     $result = $stmt->get_result();
     $globalLeaderboard = $result->fetch_all(MYSQLI_ASSOC);
-    $stmt->close();
-
-    // Get weekly leaderboard
+    $stmt->close();    // Get weekly leaderboard
     $stmt = $conn->prepare("
-        SELECT u.username, SUM(g.score) as weekly_score
+        SELECT u.username, SUM(g.score) as weekly_score, MAX(g.score) as highest_score
         FROM users u
         JOIN games g ON u.id = g.user_id
         WHERE g.played_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
@@ -243,13 +241,13 @@ try {
             <h2>Ranking Semanal</h2>
             <?php if (empty($weeklyLeaderboard)): ?>
                 <p>Nenhuma pontuação desta semana ainda.</p>
-            <?php else: ?>
-                <table class="scores-table">
+            <?php else: ?>                <table class="scores-table">
                     <thead>
                         <tr>
                             <th>Posição</th>
                             <th>Jogador</th>
                             <th>Pontuação Semanal</th>
+                            <th>Maior Pontuação</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -258,6 +256,7 @@ try {
                                 <td><?php echo $index + 1; ?>º</td>
                                 <td><?php echo htmlspecialchars($player['username']); ?></td>
                                 <td><?php echo number_format($player['weekly_score']); ?></td>
+                                <td><?php echo number_format($player['highest_score']); ?></td>
                             </tr>
                         <?php endforeach; ?>
                     </tbody>

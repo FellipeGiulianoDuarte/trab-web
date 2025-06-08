@@ -24,7 +24,7 @@ $score = (int)$data['score'];
 $userId = $_SESSION['user_id'];
 
 // Validate score range (reasonable limits)
-if ($score < 0 || $score > 10000) {
+if ($score < 0 || $score > 1200) {
     http_response_code(400);
     echo json_encode(['status' => 'error', 'message' => 'Pontuação fora do limite permitido']);
     exit();

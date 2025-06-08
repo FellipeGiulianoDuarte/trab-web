@@ -102,11 +102,9 @@ try {
     $result = $stmt->get_result();
     $userHighest = $result->fetch_assoc();
     $userHighestScore = $userHighest['highest_score'] ?? 0;
-    $stmt->close();
-
-    // Get global leaderboard (total scores)
+    $stmt->close();    // Get global leaderboard (total scores)
     $stmt = $conn->prepare("
-        SELECT u.username, SUM(g.score) as total_score
+        SELECT u.username, SUM(g.score) as total_score, MAX(g.score) as highest_score
         FROM users u
         JOIN games g ON u.id = g.user_id
         GROUP BY u.id, u.username
@@ -217,13 +215,13 @@ try {
             <h2>Ranking Geral</h2>
             <?php if (empty($globalLeaderboard)): ?>
                 <p>Nenhuma pontuação registrada ainda.</p>
-            <?php else: ?>
-                <table class="scores-table">
+            <?php else: ?>                <table class="scores-table">
                     <thead>
                         <tr>
                             <th>Posição</th>
                             <th>Jogador</th>
                             <th>Pontuação Total</th>
+                            <th>Maior Pontuação</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -232,6 +230,7 @@ try {
                                 <td><?php echo $index + 1; ?>º</td>
                                 <td><?php echo htmlspecialchars($player['username']); ?></td>
                                 <td><?php echo number_format($player['total_score']); ?></td>
+                                <td><?php echo number_format($player['highest_score']); ?></td>
                             </tr>
                         <?php endforeach; ?>
                     </tbody>

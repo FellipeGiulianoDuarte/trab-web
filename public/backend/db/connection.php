@@ -32,18 +32,30 @@ $username = '%%DB_USER_PROD%%';
 $password = '%%DB_PASSWORD_PROD%%';
 $dbname = '%%DB_NAME_PROD%%';
 
-// Validate configuration
-if (empty($servername) || $servername == '%%DB_HOST%%') {
-    die("Database host not configured");
+// Validate configuration - only check for placeholders, not empty values
+if (strpos($servername, '%%DB_HOST%%') !== false) {
+    die("Database host not configured - placeholder not replaced");
 }
-if (empty($username) || $username == '%%DB_USER_PROD%%') {
-    die("Database username not configured");
+if (strpos($username, '%%DB_USER_PROD%%') !== false) {
+    die("Database username not configured - placeholder not replaced");
 }
-if (empty($password) || $password == '%%DB_PASSWORD_PROD%%') {
-    die("Database password not configured");
+if (strpos($password, '%%DB_PASSWORD_PROD%%') !== false) {
+    die("Database password not configured - placeholder not replaced");
 }
-if (empty($dbname) || $dbname == '%%DB_NAME_PROD%%') {
-    die("Database name not configured");
+if (strpos($dbname, '%%DB_NAME_PROD%%') !== false) {
+    die("Database name not configured - placeholder not replaced");
+}
+
+// Additional validation for truly empty values (after placeholder replacement)
+if (trim($servername) === '') {
+    die("Database host is empty");
+}
+if (trim($username) === '') {
+    die("Database username is empty");
+}
+// Note: password can be empty in some configurations, so we don't check it
+if (trim($dbname) === '') {
+    die("Database name is empty");
 }
 
 // Create connection

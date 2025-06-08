@@ -1,51 +1,24 @@
-name: Deploy to AWS EC2
+name: Reset Database Schema
 
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:  # Permite executar manualmente
+    inputs:
+      confirm_reset:
+        description: 'Digite "CONFIRMAR" para resetar o banco (APAGA TODOS OS DADOS!)'
+        required: true
+        default: ''
 
 permissions:
   contents: read
 
 jobs:
-  deploy:
+  reset_database:
     runs-on: ubuntu-latest
+    if: github.event.inputs.confirm_reset == 'CONFIRMAR'
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
-      - name: Update connection.php with secrets
-        run: |
-          sed -i "s|%%DB_HOST%%|${{ secrets.DB_HOST }}|g" public/backend/db/connection.php
-          sed -i "s|%%DB_USER_PROD%%|${{ secrets.DB_USER_PROD }}|g" public/backend/db/connection.php
-          sed -i "s|%%DB_PASSWORD_PROD%%|${{ secrets.DB_PASSWORD_PROD }}|g" public/backend/db/connection.php
-          sed -i "s|%%DB_NAME_PROD%%|${{ secrets.DB_NAME_PROD }}|g" public/backend/db/connection.php
-
-      - name: Prepare remote target directory
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.AWS_HOST }}
-          username: ${{ secrets.AWS_USERNAME }}
-          key: ${{ secrets.AWS_SSH_KEY }}
-          script: |
-            echo "Preparando o diretório /var/www/html/ no servidor..."
-            sudo mkdir -p /var/www/html
-            sudo chown ${{ secrets.AWS_USERNAME }}:${{ secrets.AWS_USERNAME }} /var/www/html
-            sudo find /var/www/html/ -mindepth 1 -delete
-            echo "Diretório /var/www/html/ limpo e propriedade ajustada para o usuário de deploy."
-
-      - name: Deploy project files to EC2
-        uses: easingthemes/ssh-deploy@v5.0.0
-        with:
-          SSH_PRIVATE_KEY: ${{ secrets.AWS_SSH_KEY }}
-          ARGS: "-avz --delete" 
-          SOURCE: "./" 
-          REMOTE_HOST: ${{ secrets.AWS_HOST }}
-          REMOTE_USER: ${{ secrets.AWS_USERNAME }}
-          TARGET: "/var/www/html/"
-          EXCLUDE: "/.git/, /.github/, /db_schema.sql, /README.md, /IMPLEMENTATION_GUIDE.md"
 
       - name: Reset database with new schema
         uses: appleboy/ssh-action@v1.0.3
@@ -54,8 +27,11 @@ jobs:
           username: ${{ secrets.AWS_USERNAME }}
           key: ${{ secrets.AWS_SSH_KEY }}
           script: |
+            echo "⚠️  INICIANDO RESET DO BANCO DE DADOS..."
             echo "🗃️ Fazendo backup do banco atual..."
-            mysqldump -h ${{ secrets.DB_HOST }} -u ${{ secrets.DB_USER_PROD }} -p${{ secrets.DB_PASSWORD_PROD }} ${{ secrets.DB_NAME_PROD }} > /tmp/backup_$(date +%Y%m%d_%H%M%S).sql || echo "Backup falhou ou banco não existe"
+            
+            # Fazer backup (se o banco existir)
+            mysqldump -h ${{ secrets.DB_HOST }} -u ${{ secrets.DB_USER_PROD }} -p${{ secrets.DB_PASSWORD_PROD }} ${{ secrets.DB_NAME_PROD }} > /tmp/backup_$(date +%Y%m%d_%H%M%S).sql || echo "⚠️  Backup falhou ou banco não existe"
             
             echo "🗃️ Resetando banco de dados..."
             mysql -h ${{ secrets.DB_HOST }} -u ${{ secrets.DB_USER_PROD }} -p${{ secrets.DB_PASSWORD_PROD }} -e "DROP DATABASE IF EXISTS ${{ secrets.DB_NAME_PROD }};"
@@ -105,18 +81,7 @@ jobs:
             EOF
             
             echo "✅ Schema aplicado com sucesso!"
-
-      - name: Set final permissions on EC2
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.AWS_HOST }}
-          username: ${{ secrets.AWS_USERNAME }}
-          key: ${{ secrets.AWS_SSH_KEY }}
-          script: |
-            echo "Ajustando permissões finais dos arquivos para o Apache..."
-            sudo chown -R www-data:www-data /var/www/html
-            sudo find /var/www/html -type d -exec chmod 755 {} \;
-            sudo find /var/www/html -type f -exec chmod 644 {} \;
-            echo "Reiniciando o Apache..."
-            sudo systemctl restart apache2
-            echo "Deploy concluído com sucesso!"
+            echo "📊 Verificando tabelas criadas..."
+            mysql -h ${{ secrets.DB_HOST }} -u ${{ secrets.DB_USER_PROD }} -p${{ secrets.DB_PASSWORD_PROD }} ${{ secrets.DB_NAME_PROD }} -e "SHOW TABLES;"
+            
+            echo "🎉 Reset do banco concluído!"

@@ -115,30 +115,39 @@ function generateWord() {
 function handleInput(event) {
     if (!isPlaying) return;
     
-    if (event.key === 'Enter') {
-        const userAnswer = colorInput.value.toLowerCase().trim();
-        
-        if (userAnswer === currentCorrectColor) {
-            // Correct answer
-            score += 10;
-            scoreElement.textContent = score;
-            
-            // Visual feedback for correct answer
-            wordDisplay.style.backgroundColor = '#4CAF50';
-            setTimeout(() => {
-                wordDisplay.style.backgroundColor = 'transparent';
-            }, 200);
-        } else {
-            // Wrong answer - visual feedback
-            wordDisplay.style.backgroundColor = '#f44336';
-            setTimeout(() => {
-                wordDisplay.style.backgroundColor = 'transparent';
-            }, 200);
+    // Check for submit keys: Enter, Space, or Backspace
+    if (event.key === 'Enter' || event.key === ' ' || event.key === 'Backspace') {
+        // Prevent default behavior for space and backspace
+        if (event.key === ' ' || event.key === 'Backspace') {
+            event.preventDefault();
         }
         
-        // Clear input and generate new word
-        colorInput.value = '';
-        generateWord();
+        const userAnswer = colorInput.value.toLowerCase().trim();
+        
+        // Only process if there's an answer
+        if (userAnswer) {
+            if (userAnswer === currentCorrectColor) {
+                // Correct answer
+                score += 10;
+                scoreElement.textContent = score;
+                
+                // Visual feedback for correct answer
+                wordDisplay.style.backgroundColor = '#4CAF50';
+                setTimeout(() => {
+                    wordDisplay.style.backgroundColor = 'transparent';
+                }, 200);
+            } else {
+                // Wrong answer - visual feedback
+                wordDisplay.style.backgroundColor = '#f44336';
+                setTimeout(() => {
+                    wordDisplay.style.backgroundColor = 'transparent';
+                }, 200);
+            }
+            
+            // Clear input and generate new word
+            colorInput.value = '';
+            generateWord();
+        }
     }
 }
 

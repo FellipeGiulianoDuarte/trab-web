@@ -16,8 +16,7 @@ if (!isset($_SESSION['user_id'])) {
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>    <div class="container">
-        <h1>Type the Colour, Not the Word</h1>
-        <div class="game-instructions">
+        <h1>Type the Colour, Not the Word</h1>        <div class="game-instructions">
             <p><strong>Como jogar:</strong></p>
             <ul>
                 <li>Uma palavra de cor aparecerá na tela pintada de uma cor diferente</li>
@@ -25,6 +24,10 @@ if (!isset($_SESSION['user_id'])) {
                 <li>Não digite a palavra que está escrita!</li>
                 <li>Você tem 60 segundos para fazer o máximo de pontos</li>
                 <li>Cada resposta correta vale 10 pontos</li>
+            </ul>
+            <p><strong>Controles:</strong></p>
+            <ul>
+                <li><kbd>Enter</kbd>, <kbd>Espaço</kbd> ou <kbd>Backspace</kbd> - Enviar resposta</li>
             </ul>
         </div>
         

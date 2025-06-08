@@ -164,15 +164,12 @@ if (session_status() == PHP_SESSION_NONE) { session_start(); }
             }
             if (!checkPasswordMatch()) {
                 isValid = false;
-            }
-
-            if (!isValid) {
-                event.preventDefault(); // Prevent form submission
+            }            if (!isValid) {
+                event.preventDefault();
             }
         });
 
         function isValidEmail(email) {
-            // Basic email validation regex
             const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
             return emailRegex.test(email);
         }

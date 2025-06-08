@@ -10,7 +10,6 @@ if ($league_id <= 0) {
     exit;
 }
 
-// Get league information
 $league_query = "SELECT l.id, l.name, l.created_at, u.username as creator_name,
                  (SELECT COUNT(*) FROM league_members lm WHERE lm.league_id = l.id) as member_count
                  FROM leagues l 
@@ -28,15 +27,13 @@ if ($league_result->num_rows === 0) {
 
 $league = $league_result->fetch_assoc();
 
-// Check if user is a member of this league
 $member_check_query = "SELECT id FROM league_members WHERE league_id = ? AND user_id = ?";
 $stmt2 = $conn->prepare($member_check_query);
 $stmt2->bind_param("ii", $league_id, $user_id);
 $stmt2->execute();
 $is_member = $stmt2->get_result()->num_rows > 0;
 
-// Get league leaderboard (total scores)
-$leaderboard_query = "SELECT u.username, 
+$leaderboard_query = "SELECT u.username,
                       SUM(g.score) as total_score,
                       COUNT(g.id) as games_played,
                       MAX(g.score) as best_score,
@@ -52,8 +49,7 @@ $stmt3->bind_param("i", $league_id);
 $stmt3->execute();
 $leaderboard_result = $stmt3->get_result();
 
-// Get weekly leaderboard (last 7 days)
-$weekly_query = "SELECT u.username, 
+$weekly_query = "SELECT u.username,
                  SUM(g.score) as weekly_score,
                  COUNT(g.id) as weekly_games,
                  MAX(g.score) as weekly_best
@@ -239,9 +235,8 @@ $weekly_result = $stmt4->get_result();
                     </thead>
                     <tbody>
                         <?php 
-                        $position = 1;
-                        while ($player = $weekly_result->fetch_assoc()): 
-                            if ($player['weekly_score'] == 0) continue; // Skip players with no games this week
+                        $position = 1;                        while ($player = $weekly_result->fetch_assoc()): 
+                            if ($player['weekly_score'] == 0) continue;
                             $rank_class = '';
                             if ($position == 1) $rank_class = 'gold';
                             elseif ($position == 2) $rank_class = 'silver';

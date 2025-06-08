@@ -5,7 +5,6 @@ require_once __DIR__ . '/backend/db/connection.php';
 $message = '';
 $error = '';
 
-// Handle success/error messages from POST requests
 if (isset($_SESSION['league_message'])) {
     $message = $_SESSION['league_message'];
     unset($_SESSION['league_message']);
@@ -15,10 +14,8 @@ if (isset($_SESSION['league_error'])) {
     unset($_SESSION['league_error']);
 }
 
-// Get current user ID
 $user_id = $_SESSION['user_id'];
 
-// Fetch available leagues
 $leagues_query = "SELECT l.id, l.name, l.created_at, u.username as creator_name,
                   COUNT(lm.user_id) as member_count,
                   COUNT(CASE WHEN lm.user_id = ? THEN 1 END) as is_member
@@ -32,7 +29,6 @@ $stmt->bind_param("i", $user_id);
 $stmt->execute();
 $leagues_result = $stmt->get_result();
 
-// Fetch user's leagues
 $user_leagues_query = "SELECT l.id, l.name, l.keyword, l.created_at, u.username as creator_name,
                        (SELECT COUNT(*) FROM league_members lm WHERE lm.league_id = l.id) as member_count
                        FROM leagues l 

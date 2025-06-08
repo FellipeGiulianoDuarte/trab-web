@@ -1,78 +1,140 @@
 <?php
-session_start();
+// Enable error reporting for debugging
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 
-// Check if user is logged in
-if (!isset($_SESSION['user_id'])) {
-    header('Location: login.php');
-    exit();
+// Include required files
+try {
+    require_once __DIR__ . '/backend/auth/auth_check.php';
+    require_once __DIR__ . '/backend/db/connection.php';
+} catch (Exception $e) {
+    die("System error: Unable to load required components. " . $e->getMessage());
 }
 
-require_once 'backend/db/connection.php';
+// Verify database connection
+if (!isset($conn) || $conn->connect_error) {
+    die("Database connection error");
+}
 
-// Get user's personal scores
-$stmt = $conn->prepare("
-    SELECT score, played_at 
-    FROM games 
-    WHERE user_id = ? 
-    ORDER BY played_at DESC 
-    LIMIT 10
-");
-$stmt->bind_param("i", $_SESSION['user_id']);
-$stmt->execute();
-$result = $stmt->get_result();
-$userGames = $result->fetch_all(MYSQLI_ASSOC);
-$stmt->close();
+// Verify user session
+if (!isset($_SESSION['user_id'])) {
+    die("User session error");
+}
 
-// Get user's total score
-$stmt = $conn->prepare("SELECT SUM(score) as total_score FROM games WHERE user_id = ?");
-$stmt->bind_param("i", $_SESSION['user_id']);
-$stmt->execute();
-$result = $stmt->get_result();
-$userTotal = $result->fetch_assoc();
-$userTotalScore = $userTotal['total_score'] ?? 0;
-$stmt->close();
+$user_id = $_SESSION['user_id'];
 
-// Get user's weekly score (last 7 days)
-$stmt = $conn->prepare("
-    SELECT SUM(score) as weekly_score 
-    FROM games 
-    WHERE user_id = ? AND played_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
-");
-$stmt->bind_param("i", $_SESSION['user_id']);
-$stmt->execute();
-$result = $stmt->get_result();
-$userWeekly = $result->fetch_assoc();
-$userWeeklyScore = $userWeekly['weekly_score'] ?? 0;
-$stmt->close();
+// Initialize variables
+$userGames = [];
+$userTotalScore = 0;
+$userWeeklyScore = 0;
+$globalLeaderboard = [];
+$weeklyLeaderboard = [];
 
-// Get global leaderboard (total scores)
-$stmt = $conn->prepare("
-    SELECT u.username, SUM(g.score) as total_score
-    FROM users u
-    JOIN games g ON u.id = g.user_id
-    GROUP BY u.id, u.username
-    ORDER BY total_score DESC
-    LIMIT 10
-");
-$stmt->execute();
-$result = $stmt->get_result();
-$globalLeaderboard = $result->fetch_all(MYSQLI_ASSOC);
-$stmt->close();
+try {
+    // Get user's personal scores
+    $stmt = $conn->prepare("
+        SELECT score, played_at 
+        FROM games 
+        WHERE user_id = ? 
+        ORDER BY played_at DESC 
+        LIMIT 10
+    ");
+    if (!$stmt) {
+        throw new Exception("Failed to prepare user games query: " . $conn->error);
+    }
+    
+    $stmt->bind_param("i", $user_id);
+    if (!$stmt->execute()) {
+        throw new Exception("Failed to execute user games query: " . $stmt->error);
+    }
+    
+    $result = $stmt->get_result();
+    $userGames = $result->fetch_all(MYSQLI_ASSOC);
+    $stmt->close();
 
-// Get weekly leaderboard
-$stmt = $conn->prepare("
-    SELECT u.username, SUM(g.score) as weekly_score
-    FROM users u
-    JOIN games g ON u.id = g.user_id
-    WHERE g.played_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
-    GROUP BY u.id, u.username
-    ORDER BY weekly_score DESC
-    LIMIT 10
-");
-$stmt->execute();
-$result = $stmt->get_result();
-$weeklyLeaderboard = $result->fetch_all(MYSQLI_ASSOC);
-$stmt->close();
+    // Get user's total score
+    $stmt = $conn->prepare("SELECT SUM(score) as total_score FROM games WHERE user_id = ?");
+    if (!$stmt) {
+        throw new Exception("Failed to prepare total score query: " . $conn->error);
+    }
+    
+    $stmt->bind_param("i", $user_id);
+    if (!$stmt->execute()) {
+        throw new Exception("Failed to execute total score query: " . $stmt->error);
+    }
+    
+    $result = $stmt->get_result();
+    $userTotal = $result->fetch_assoc();
+    $userTotalScore = $userTotal['total_score'] ?? 0;
+    $stmt->close();
+
+    // Get user's weekly score (last 7 days)
+    $stmt = $conn->prepare("
+        SELECT SUM(score) as weekly_score 
+        FROM games 
+        WHERE user_id = ? AND played_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+    ");
+    if (!$stmt) {
+        throw new Exception("Failed to prepare weekly score query: " . $conn->error);
+    }
+    
+    $stmt->bind_param("i", $user_id);
+    if (!$stmt->execute()) {
+        throw new Exception("Failed to execute weekly score query: " . $stmt->error);
+    }
+    
+    $result = $stmt->get_result();
+    $userWeekly = $result->fetch_assoc();
+    $userWeeklyScore = $userWeekly['weekly_score'] ?? 0;
+    $stmt->close();
+
+    // Get global leaderboard (total scores)
+    $stmt = $conn->prepare("
+        SELECT u.username, SUM(g.score) as total_score
+        FROM users u
+        JOIN games g ON u.id = g.user_id
+        GROUP BY u.id, u.username
+        ORDER BY total_score DESC
+        LIMIT 10
+    ");
+    if (!$stmt) {
+        throw new Exception("Failed to prepare global leaderboard query: " . $conn->error);
+    }
+    
+    if (!$stmt->execute()) {
+        throw new Exception("Failed to execute global leaderboard query: " . $stmt->error);
+    }
+    
+    $result = $stmt->get_result();
+    $globalLeaderboard = $result->fetch_all(MYSQLI_ASSOC);
+    $stmt->close();
+
+    // Get weekly leaderboard
+    $stmt = $conn->prepare("
+        SELECT u.username, SUM(g.score) as weekly_score
+        FROM users u
+        JOIN games g ON u.id = g.user_id
+        WHERE g.played_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+        GROUP BY u.id, u.username
+        ORDER BY weekly_score DESC
+        LIMIT 10
+    ");
+    if (!$stmt) {
+        throw new Exception("Failed to prepare weekly leaderboard query: " . $conn->error);
+    }
+    
+    if (!$stmt->execute()) {
+        throw new Exception("Failed to execute weekly leaderboard query: " . $stmt->error);
+    }
+    
+    $result = $stmt->get_result();
+    $weeklyLeaderboard = $result->fetch_all(MYSQLI_ASSOC);
+    $stmt->close();
+
+} catch (Exception $e) {
+    error_log("Scores page error: " . $e->getMessage());
+    die("Error loading scores: " . $e->getMessage());
+}
 ?>
 
 <!DOCTYPE html>

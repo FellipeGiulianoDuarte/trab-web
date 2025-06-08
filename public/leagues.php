@@ -1,6 +1,25 @@
 <?php
-require_once __DIR__ . '/backend/auth/auth_check.php';
-require_once __DIR__ . '/backend/db/connection.php';
+// Enable error reporting for debugging
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
+// Include required files
+try {
+    require_once __DIR__ . '/backend/auth/auth_check.php';
+    require_once __DIR__ . '/backend/db/connection.php';
+} catch (Exception $e) {
+    die("System error: Unable to load required components. " . $e->getMessage());
+}
+
+// Verify database connection
+if (!isset($conn) || $conn->connect_error) {
+    die("Database connection error");
+}
+
+// Verify user session
+if (!isset($_SESSION['user_id'])) {
+    die("User session error");
+}
 
 $message = '';
 $error = '';
@@ -16,30 +35,58 @@ if (isset($_SESSION['league_error'])) {
 
 $user_id = $_SESSION['user_id'];
 
-$leagues_query = "SELECT l.id, l.name, l.created_at, u.username as creator_name,
-                  COUNT(lm.user_id) as member_count,
-                  COUNT(CASE WHEN lm.user_id = ? THEN 1 END) as is_member
-                  FROM leagues l
-                  JOIN users u ON l.creator_user_id = u.id
-                  LEFT JOIN league_members lm ON l.id = lm.league_id
-                  GROUP BY l.id, l.name, l.created_at, u.username
-                  ORDER BY l.created_at DESC";
-$stmt = $conn->prepare($leagues_query);
-$stmt->bind_param("i", $user_id);
-$stmt->execute();
-$leagues_result = $stmt->get_result();
+// Initialize result variables
+$leagues_result = null;
+$user_leagues_result = null;
 
-$user_leagues_query = "SELECT l.id, l.name, l.keyword, l.created_at, u.username as creator_name,
-                       (SELECT COUNT(*) FROM league_members lm WHERE lm.league_id = l.id) as member_count
-                       FROM leagues l 
-                       JOIN users u ON l.creator_user_id = u.id 
-                       JOIN league_members lm ON l.id = lm.league_id 
-                       WHERE lm.user_id = ? 
-                       ORDER BY lm.joined_at DESC";
-$stmt2 = $conn->prepare($user_leagues_query);
-$stmt2->bind_param("i", $user_id);
-$stmt2->execute();
-$user_leagues_result = $stmt2->get_result();
+try {
+    // Get all leagues with member info
+    $leagues_query = "SELECT l.id, l.name, l.created_at, u.username as creator_name,
+                      COUNT(DISTINCT lm.user_id) as member_count,
+                      SUM(CASE WHEN lm.user_id = ? THEN 1 ELSE 0 END) as is_member
+                      FROM leagues l
+                      JOIN users u ON l.creator_user_id = u.id
+                      LEFT JOIN league_members lm ON l.id = lm.league_id
+                      GROUP BY l.id, l.name, l.created_at, u.username
+                      ORDER BY l.created_at DESC";
+    
+    $stmt = $conn->prepare($leagues_query);
+    if (!$stmt) {
+        throw new Exception("Failed to prepare leagues query: " . $conn->error);
+    }
+    
+    $stmt->bind_param("i", $user_id);
+    if (!$stmt->execute()) {
+        throw new Exception("Failed to execute leagues query: " . $stmt->error);
+    }
+    
+    $leagues_result = $stmt->get_result();
+
+    // Get user's leagues
+    $user_leagues_query = "SELECT l.id, l.name, l.keyword, l.created_at, u.username as creator_name,
+                           (SELECT COUNT(*) FROM league_members lm WHERE lm.league_id = l.id) as member_count
+                           FROM leagues l 
+                           JOIN users u ON l.creator_user_id = u.id 
+                           JOIN league_members lm ON l.id = lm.league_id 
+                           WHERE lm.user_id = ? 
+                           ORDER BY lm.joined_at DESC";
+    
+    $stmt2 = $conn->prepare($user_leagues_query);
+    if (!$stmt2) {
+        throw new Exception("Failed to prepare user leagues query: " . $conn->error);
+    }
+    
+    $stmt2->bind_param("i", $user_id);
+    if (!$stmt2->execute()) {
+        throw new Exception("Failed to execute user leagues query: " . $stmt2->error);
+    }
+    
+    $user_leagues_result = $stmt2->get_result();
+
+} catch (Exception $e) {
+    error_log("Leagues page error: " . $e->getMessage());
+    $error = "Error loading leagues: " . $e->getMessage();
+}
 ?>
 
 <!DOCTYPE html>

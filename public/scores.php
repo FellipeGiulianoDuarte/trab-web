@@ -27,6 +27,7 @@ $user_id = $_SESSION['user_id'];
 $userGames = [];
 $userTotalScore = 0;
 $userWeeklyScore = 0;
+$userHighestScore = 0;
 $globalLeaderboard = [];
 $weeklyLeaderboard = [];
 
@@ -84,8 +85,23 @@ try {
     }
     
     $result = $stmt->get_result();
-    $userWeekly = $result->fetch_assoc();
-    $userWeeklyScore = $userWeekly['weekly_score'] ?? 0;
+    $userWeekly = $result->fetch_assoc();    $userWeeklyScore = $userWeekly['weekly_score'] ?? 0;
+    $stmt->close();
+
+    // Get user's highest score
+    $stmt = $conn->prepare("SELECT MAX(score) as highest_score FROM games WHERE user_id = ?");
+    if (!$stmt) {
+        throw new Exception("Failed to prepare highest score query: " . $conn->error);
+    }
+    
+    $stmt->bind_param("i", $user_id);
+    if (!$stmt->execute()) {
+        throw new Exception("Failed to execute highest score query: " . $stmt->error);
+    }
+    
+    $result = $stmt->get_result();
+    $userHighest = $result->fetch_assoc();
+    $userHighestScore = $userHighest['highest_score'] ?? 0;
     $stmt->close();
 
     // Get global leaderboard (total scores)
@@ -151,8 +167,7 @@ try {
         
         <!-- User's Personal Stats -->
         <div class="score-section">
-            <h2>Suas Estatísticas</h2>
-            <div class="stats-grid">
+            <h2>Suas Estatísticas</h2>            <div class="stats-grid">
                 <div class="stat-card">
                     <h3>Pontuação Total</h3>
                     <p class="stat-number"><?php echo number_format($userTotalScore); ?></p>
@@ -160,6 +175,10 @@ try {
                 <div class="stat-card">
                     <h3>Pontuação Semanal</h3>
                     <p class="stat-number"><?php echo number_format($userWeeklyScore); ?></p>
+                </div>
+                <div class="stat-card">
+                    <h3>Maior Pontuação</h3>
+                    <p class="stat-number"><?php echo number_format($userHighestScore); ?></p>
                 </div>
                 <div class="stat-card">
                     <h3>Jogos Jogados</h3>

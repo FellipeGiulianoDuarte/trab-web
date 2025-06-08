@@ -24,10 +24,9 @@ if (!isset($_SESSION['user_id'])) {
                 <li>Não digite a palavra que está escrita!</li>
                 <li>Você tem 60 segundos para fazer o máximo de pontos</li>
                 <li>Cada resposta correta vale 10 pontos</li>
-            </ul>
-            <p><strong>Controles:</strong></p>
+            </ul>            <p><strong>Controles:</strong></p>
             <ul>
-                <li><kbd>Enter</kbd>, <kbd>Espaço</kbd> ou <kbd>Backspace</kbd> - Enviar resposta</li>
+                <li><kbd>Enter</kbd> ou <kbd>Espaço</kbd> - Enviar resposta</li>
             </ul>
         </div>
         

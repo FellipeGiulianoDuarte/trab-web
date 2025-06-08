@@ -115,10 +115,10 @@ function generateWord() {
 function handleInput(event) {
     if (!isPlaying) return;
     
-    // Check for submit keys: Enter, Space, or Backspace
-    if (event.key === 'Enter' || event.key === ' ' || event.key === 'Backspace') {
-        // Prevent default behavior for space and backspace
-        if (event.key === ' ' || event.key === 'Backspace') {
+    // Check for submit keys: Enter or Space (removed Backspace)
+    if (event.key === 'Enter' || event.key === ' ') {
+        // Prevent default behavior for space
+        if (event.key === ' ') {
             event.preventDefault();
         }
         

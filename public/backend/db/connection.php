@@ -27,10 +27,10 @@ if (file_exists($dotenvPath)) {
 }
 
 // Database configuration
-$servername = '%%DB_HOST%%';
-$username = '%%DB_USER_PROD%%';
-$password = '%%DB_PASSWORD_PROD%%';
-$dbname = '%%DB_NAME_PROD%%';
+$servername = 'localhost';
+$username = 'fellipe';
+$password = 'rb0i#w6@nHXgH8!WR';
+$dbname = 'game_platform';
 
 // Validate configuration - only check for placeholders, not empty values
 if (strpos($servername, '%%DB_HOST%%') !== false) {

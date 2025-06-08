@@ -1,0 +1,47 @@
+name: Debug Production Errors
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  debug:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check Apache Error Logs
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.AWS_HOST }}
+          username: ${{ secrets.AWS_USERNAME }}
+          key: ${{ secrets.AWS_SSH_KEY }}
+          script: |
+            echo "🔍 Checking Apache error logs for recent errors..."
+            echo "============================================="
+            sudo tail -n 50 /var/log/apache2/error.log
+            echo ""
+            echo "🔍 Checking PHP error logs..."
+            echo "============================================="
+            sudo tail -n 50 /var/log/php*.log 2>/dev/null || echo "No PHP error logs found"
+            echo ""
+            echo "🔍 Testing database connection..."
+            echo "============================================="
+            mysql -h ${{ secrets.DB_HOST }} -u ${{ secrets.DB_USER_PROD }} -p${{ secrets.DB_PASSWORD_PROD }} ${{ secrets.DB_NAME_PROD }} -e "SHOW TABLES;" || echo "Database connection failed"
+            echo ""
+            echo "🔍 Checking file permissions..."
+            echo "============================================="
+            ls -la /var/www/html/public/
+            ls -la /var/www/html/public/backend/db/
+            echo ""
+            echo "🔍 Testing specific pages..."
+            echo "============================================="
+            echo "Testing scores.php:"
+            curl -s -I http://localhost/scores.php | head -n 1
+            echo "Testing leagues.php:"
+            curl -s -I http://localhost/leagues.php | head -n 1
+            echo ""
+            echo "🔍 Checking connection.php content..."
+            echo "============================================="
+            head -n 10 /var/www/html/public/backend/db/connection.php

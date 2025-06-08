@@ -8,7 +8,7 @@ if (session_status() == PHP_SESSION_NONE) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Plataforma de Jogos</title>
+    <title>Type the colour, not the word</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -69,8 +69,7 @@ if (session_status() == PHP_SESSION_NONE) {
                 <a href="backend/auth/logout.php" class="logout-link">Sair</a> <!-- Direct path to backend logout handler -->
             </div>
         <?php else: ?>
-            <h1>Bem-vindo à Plataforma de Jogos!</h1>
-            <p>Por favor, faça login ou cadastre-se para continuar.</p>
+            <h1>Por favor, faça login ou cadastre-se para continuar.</h1>
             <div class="nav-links">
                 <a href="login.php">Entrar</a>
                 <a href="register.php">Cadastrar</a>

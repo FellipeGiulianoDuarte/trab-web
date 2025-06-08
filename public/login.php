@@ -51,9 +51,23 @@ if (session_status() == PHP_SESSION_NONE) { session_start(); }
             cursor: pointer;
             width: 100%;
             font-size: 16px;
-        }
-        input[type="submit"]:hover {
+        }        input[type="submit"]:hover {
             background-color: #0056b3;
+        }
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            margin: 15px 0;
+        }
+        .checkbox-container input[type="checkbox"] {
+            margin-right: 8px;
+            width: auto;
+            height: auto;
+        }
+        .checkbox-container label {
+            margin: 0;
+            font-weight: normal;
+            cursor: pointer;
         }
         .alert {
             padding: 15px;
@@ -94,9 +108,7 @@ if (session_status() == PHP_SESSION_NONE) { session_start(); }
                     unset($_SESSION['success_message']);
                 ?>
             </div>
-        <?php endif; ?>
-
-        <form action="backend/auth/handle_login.php" method="POST">
+        <?php endif; ?>        <form action="backend/auth/handle_login.php" method="POST">
             <div>
                 <label for="login_identifier">Username or Email:</label>
                 <input type="text" id="login_identifier" name="login_identifier" required>
@@ -104,6 +116,10 @@ if (session_status() == PHP_SESSION_NONE) { session_start(); }
             <div>
                 <label for="password">Password:</label>
                 <input type="password" id="password" name="password" required>
+            </div>
+            <div class="checkbox-container">
+                <input type="checkbox" id="remember_me" name="remember_me" value="1">
+                <label for="remember_me">Remember me for 7 days</label>
             </div>
             <div>
                 <input type="submit" value="Login">

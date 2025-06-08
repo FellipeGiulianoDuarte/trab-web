@@ -1,6 +1,6 @@
 <?php
 // Load .env file variables
-$dotenvPath = __DIR__ . '/../../.env'; // Assumes .env is in the project root
+$dotenvPath = __DIR__ . '/../../../.env'; // Assumes .env is in the project root
 if (file_exists($dotenvPath)) {
     $lines = file($dotenvPath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
     foreach ($lines as $line) {

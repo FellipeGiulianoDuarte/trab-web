@@ -1,6 +1,7 @@
 <?php
 if (session_status() == PHP_SESSION_NONE) { session_start(); }
 require_once __DIR__ . '/../db/connection.php'; // Step 1 & 2
+require_once __DIR__ . '/session_manager.php'; // Include session manager
 
 // Step 3: Check if the request method is POST
 // This check is relevant if the script is directly accessed,
@@ -14,6 +15,7 @@ if ($_SERVER["REQUEST_METHOD"] !== "POST") {
 // Step 4: Retrieve data from $_POST
 $login_identifier = $_POST['login_identifier'] ?? '';
 $password = $_POST['password'] ?? '';
+$remember_me = isset($_POST['remember_me']) && $_POST['remember_me'] === '1';
 
 // Step 5: Validate inputs
 if (empty($login_identifier) || empty($password)) {
@@ -52,17 +54,16 @@ $result = $stmt->get_result();
 
 // Step 7: Verify credentials
 if ($result->num_rows === 1) {
-    $user = $result->fetch_assoc();
-    // Verify password (ensure your password column in DB is named 'password' or adjust as needed)
+    $user = $result->fetch_assoc();    // Verify password (ensure your password column in DB is named 'password' or adjust as needed)
     if (password_verify($password, $user['password_hash'])) { // Changed $user['password'] to $user['password_hash']
-        // Password is correct
-        $_SESSION['user_id'] = $user['id'];
-        $_SESSION['username'] = $user['username'];
-          // Redirect to a protected page (e.g., index.php or a game page)
+        // Password is correct - use SessionManager to create session
+        SessionManager::createSession($user['id'], $user['username'], $remember_me);
+        
+        // Redirect to a protected page (e.g., index.php or a game page)
         header("Location: ../../index.php"); // Corrected path
         $stmt->close();
         $conn->close();
-        exit();    } else {
+        exit();} else {
         // Invalid password
         $_SESSION['error_message'] = "Invalid credentials.";
         $stmt->close();

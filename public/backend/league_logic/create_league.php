@@ -7,8 +7,10 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-$league_name = trim($_POST['league_name'] ?? '');
-$keyword = trim($_POST['keyword'] ?? '');
+// Validar e sanitizar os dados de entrada
+$league_name = htmlspecialchars(trim($_POST['league_name'] ?? ''), ENT_QUOTES, 'UTF-8');
+$keyword = htmlspecialchars(trim($_POST['keyword'] ?? ''), ENT_QUOTES, 'UTF-8');
+
 $creator_user_id = $_SESSION['user_id'];
 
 if (empty($league_name) || empty($keyword)) {

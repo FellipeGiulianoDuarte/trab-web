@@ -7,6 +7,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
+// Validar e sanitizar os dados de entrada
 $league_id = intval($_POST['league_id'] ?? 0);
 $user_id = $_SESSION['user_id'];
 

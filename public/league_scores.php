@@ -2,7 +2,8 @@
 require_once __DIR__ . '/backend/auth/auth_check.php';
 require_once __DIR__ . '/backend/db/connection.php';
 
-$league_id = intval($_GET['id'] ?? 0);
+// Validar e sanitizar o ID da liga
+$league_id = htmlspecialchars(intval($_GET['id'] ?? 0), ENT_QUOTES, 'UTF-8');
 $user_id = $_SESSION['user_id'];
 
 if ($league_id <= 0) {

@@ -41,32 +41,15 @@ if (strlen($keyword) > 50) {
     exit;
 }
 
-if (strpos($keyword, ' ') !== false) {
-    $_SESSION['league_error'] = 'Palavra-chave não deve conter espaços.';
-    header('Location: ../../leagues.php');
-    exit;
-}
-
-$check_keyword_query = "SELECT id FROM leagues WHERE keyword = ?";
-$stmt = $conn->prepare($check_keyword_query);
-$stmt->bind_param("s", $keyword);
+// Check if league name already exists (globally unique)
+$check_name_query = "SELECT id FROM leagues WHERE name = ?";
+$stmt = $conn->prepare($check_name_query);
+$stmt->bind_param("s", $league_name);
 $stmt->execute();
 $result = $stmt->get_result();
 
 if ($result->num_rows > 0) {
-    $_SESSION['league_error'] = 'Esta palavra-chave já está sendo usada por outra liga. Por favor, escolha uma diferente.';
-    header('Location: ../../leagues.php');
-    exit;
-}
-
-$check_name_query = "SELECT id FROM leagues WHERE name = ? AND creator_user_id = ?";
-$stmt2 = $conn->prepare($check_name_query);
-$stmt2->bind_param("si", $league_name, $creator_user_id);
-$stmt2->execute();
-$result2 = $stmt2->get_result();
-
-if ($result2->num_rows > 0) {
-    $_SESSION['league_error'] = 'Você já possui uma liga com este nome.';
+    $_SESSION['league_error'] = 'Já existe uma liga com este nome. Por favor, escolha um nome diferente.';
     header('Location: ../../leagues.php');
     exit;
 }
@@ -75,21 +58,22 @@ try {
     $conn->begin_transaction();
     
     $insert_league_query = "INSERT INTO leagues (name, creator_user_id, keyword) VALUES (?, ?, ?)";
-    $stmt3 = $conn->prepare($insert_league_query);
-    $stmt3->bind_param("sis", $league_name, $creator_user_id, $keyword);
+    $stmt2 = $conn->prepare($insert_league_query);
+    $stmt2->bind_param("sis", $league_name, $creator_user_id, $keyword);
     
-    if (!$stmt3->execute()) {
-        throw new Exception("Erro ao criar a liga: " . $stmt3->error);
+    if (!$stmt2->execute()) {
+        throw new Exception("Erro ao criar a liga: " . $stmt2->error);
     }
     
     $league_id = $conn->insert_id;
     
     $insert_member_query = "INSERT INTO league_members (league_id, user_id) VALUES (?, ?)";
-    $stmt4 = $conn->prepare($insert_member_query);
-    $stmt4->bind_param("ii", $league_id, $creator_user_id);
+    $stmt3 = $conn->prepare($insert_member_query);
+    $stmt3->bind_param("ii", $league_id, $creator_user_id);
     
-    if (!$stmt4->execute()) {
-        throw new Exception("Erro ao adicionar criador como membro: " . $stmt4->error);    }
+    if (!$stmt3->execute()) {
+        throw new Exception("Erro ao adicionar criador como membro: " . $stmt3->error);
+    }
     
     $conn->commit();
     

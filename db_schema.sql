@@ -22,9 +22,9 @@ CREATE TABLE IF NOT EXISTS `games` (
 
 CREATE TABLE IF NOT EXISTS `leagues` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
-  `name` VARCHAR(255) NOT NULL,
+  `name` VARCHAR(255) NOT NULL UNIQUE, -- League name must be unique
   `creator_user_id` INT NOT NULL,
-  `keyword` VARCHAR(50) NOT NULL UNIQUE, -- Keyword for joining the league
+  `keyword` VARCHAR(50) NOT NULL, -- Keyword for joining the league (can be repeated)
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (`creator_user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
 );

@@ -202,17 +202,15 @@ $user_leagues_result = $stmt2->get_result();
             <div class="message error"><?php echo htmlspecialchars($error); ?></div>
         <?php endif; ?>        <!-- Create League Section -->
         <div class="league-section" id="create-league">
-            <h2>Criar Nova Liga</h2>
-            <form action="backend/league_logic/create_league.php" method="POST" class="league-form" onsubmit="return validateLeagueForm();">
+            <h2>Criar Nova Liga</h2>            <form action="backend/league_logic/create_league.php" method="POST" class="league-form" onsubmit="return validateLeagueForm();">
                 <input type="text" name="league_name" id="league_name" placeholder="Nome da Liga" required maxlength="255" minlength="3">
                 <input type="text" name="keyword" id="keyword" placeholder="Palavra-chave (para entrada)" required maxlength="50" minlength="3" autocomplete="off">
-                <small style="color: #666;">A palavra-chave será necessária para outros jogadores entrarem na sua liga.</small>
+                <small style="color: #666;">A palavra-chave será necessária para outros jogadores entrarem na sua liga. Várias ligas podem usar a mesma palavra-chave.</small>
                 <button type="submit">Criar Liga</button>
             </form>
         </div>
 
-        <script>
-        function validateLeagueForm() {
+        <script>        function validateLeagueForm() {
             const name = document.getElementById('league_name').value.trim();
             const keyword = document.getElementById('keyword').value.trim();
             
@@ -223,11 +221,6 @@ $user_leagues_result = $stmt2->get_result();
             
             if (keyword.length < 3) {
                 alert('A palavra-chave deve ter pelo menos 3 caracteres.');
-                return false;
-            }
-            
-            if (keyword.includes(' ')) {
-                alert('A palavra-chave não deve conter espaços.');
                 return false;
             }
             

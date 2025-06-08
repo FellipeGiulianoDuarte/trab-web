@@ -92,24 +92,13 @@ function generateWord() {
     const displayWord = colors[wordIndex];
     const displayColor = colors[colorIndex];
     currentCorrectColor = displayColor;
-    
-    // Update the display with better colors for visibility
+      // Update the display with better colors for visibility
     wordDisplay.textContent = displayWord.toUpperCase();
     const colorValue = colorVariations[displayColor] || colorMapping[displayColor];
     wordDisplay.style.color = colorValue;
     wordDisplay.style.fontSize = '3em';
     wordDisplay.style.fontWeight = 'bold';
     wordDisplay.style.textShadow = '2px 2px 4px rgba(0,0,0,0.3)';
-    
-    // Special handling for white text (add dark background)
-    if (displayColor === 'branco') {
-        wordDisplay.style.backgroundColor = '#343a40';
-        wordDisplay.style.padding = '10px';
-        wordDisplay.style.borderRadius = '8px';
-    } else {
-        wordDisplay.style.backgroundColor = 'transparent';
-        wordDisplay.style.padding = '0';
-    }
 }
 
 function handleInput(event) {

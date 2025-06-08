@@ -1,6 +1,6 @@
 <?php
-require_once __DIR__ . '/../src/auth/auth_check.php';
-require_once __DIR__ . '/../src/db/connection.php';
+require_once __DIR__ . '/backend/auth/auth_check.php';
+require_once __DIR__ . '/backend/db/connection.php';
 
 $league_id = intval($_GET['id'] ?? 0);
 $user_id = $_SESSION['user_id'];

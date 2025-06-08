@@ -1,11 +1,5 @@
 <?php 
 if (session_status() == PHP_SESSION_NONE) { session_start(); }
-
-// Check if the form was submitted
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Include the handler for login logic
-    require_once __DIR__ . '/../src/auth/handle_login.php';
-}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -102,7 +96,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
         <?php endif; ?>
 
-        <form action="login.php" method="POST">
+        <form action="backend/auth/handle_login.php" method="POST">
             <div>
                 <label for="login_identifier">Username or Email:</label>
                 <input type="text" id="login_identifier" name="login_identifier" required>

@@ -1,3 +1,55 @@
+# Type the Colour, Not the Word - Game Implementation Status
+
+## ✅ COMPLETED FEATURES
+
+### Game Implementation
+- **Core Game Logic**: "Type the Colour, Not the Word" game fully implemented
+- **Game Mechanics**: 
+  - Words displayed in different colors than their meaning
+  - 60-second timer
+  - 10 points per correct answer
+  - Real-time score tracking
+- **Visual Feedback**: Color-coded feedback for correct/incorrect answers
+- **Responsive Design**: Works on desktop and mobile devices
+
+### Backend Integration
+- **Score Saving**: Automatic score saving to database after each game
+- **Database Schema**: Complete implementation with users, games, leagues, and league_members tables
+- **Authentication**: User registration, login, and session management
+- **Security**: Password hashing, SQL injection protection, input validation
+
+### Frontend Features
+- **Game Interface**: Clean, intuitive game interface with instructions
+- **Score Display**: Personal statistics, game history, and leaderboards
+- **Navigation**: Easy navigation between game, scores, and leagues
+- **Styling**: Modern CSS with responsive design
+
+### Files Created/Modified:
+- `public/game_page.php` - Main game interface
+- `public/js/game.js` - Complete game logic
+- `public/scores.php` - Score display and leaderboards  
+- `public/backend/game_logic/save_score.php` - Score saving backend
+- `public/css/style.css` - Enhanced with game-specific styles
+- `public/js/script.js` - General utility functions
+
+## 🎮 How to Play
+1. Register an account and log in
+2. Click "Jogar" from the main menu
+3. Click "Iniciar" to start the game
+4. A word will appear in a color different from its meaning
+5. Type the COLOR you see (not the word itself)
+6. Press Enter to submit your answer
+7. Try to get as many correct answers as possible in 60 seconds!
+
+## 🏆 Scoring System
+- Each correct answer: **+10 points**
+- Incorrect answers: **0 points** (no penalty)
+- Personal statistics track total and weekly scores
+- Global and weekly leaderboards available
+
+---
+
+<!-- filepath: c:\Users\Fellipe\Desktop\facul\trab-web\README.md -->
 game to be based on: Click the Colour and Not the Word
 But we are going to make: Type the colour and not the word
 

@@ -16,12 +16,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Update connection.php with secrets
+      - name: Update connection.php with production secrets
         run: |
-          sed -i "s|%%DB_HOST%%|${{ secrets.DB_HOST }}|g" public/backend/db/connection.php
-          sed -i "s|%%DB_USER_PROD%%|${{ secrets.DB_USER_PROD }}|g" public/backend/db/connection.php
-          sed -i "s|%%DB_PASSWORD_PROD%%|${{ secrets.DB_PASSWORD_PROD }}|g" public/backend/db/connection.php
-          sed -i "s|%%DB_NAME_PROD%%|${{ secrets.DB_NAME_PROD }}|g" public/backend/db/connection.php
+          # Set production environment variables directly in the file
+          sed -i "s/getenv('DB_HOST') ?: getenv('DB_SERVERNAME') ?: 'localhost'/\$_ENV['DB_HOST'] = '${{ secrets.DB_HOST }}'; getenv('DB_HOST')/g" public/backend/db/connection.php
+          sed -i "s/getenv('DB_USER_PROD') ?: getenv('DB_USERNAME') ?: 'root'/\$_ENV['DB_USER_PROD'] = '${{ secrets.DB_USER_PROD }}'; getenv('DB_USER_PROD')/g" public/backend/db/connection.php
+          sed -i "s/getenv('DB_PASSWORD_PROD') ?: getenv('DB_PASSWORD') ?: ''/\$_ENV['DB_PASSWORD_PROD'] = '${{ secrets.DB_PASSWORD_PROD }}'; getenv('DB_PASSWORD_PROD')/g" public/backend/db/connection.php
+          sed -i "s/getenv('DB_NAME_PROD') ?: getenv('DB_NAME') ?: 'game_platform'/\$_ENV['DB_NAME_PROD'] = '${{ secrets.DB_NAME_PROD }}'; getenv('DB_NAME_PROD')/g" public/backend/db/connection.php
 
       - name: Prepare remote target directory
         uses: appleboy/ssh-action@v1.0.3

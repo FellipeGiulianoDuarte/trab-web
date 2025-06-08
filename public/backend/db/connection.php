@@ -27,10 +27,10 @@ if (file_exists($dotenvPath)) {
 }
 
 // Database configuration
-$servername = 'localhost';
-$username = 'fellipe';
-$password = 'rb0i#w6@nHXgH8!WR';
-$dbname = 'game_platform';
+$servername = getenv('DB_HOST') ?: getenv('DB_SERVERNAME') ?: 'localhost';
+$username = getenv('DB_USER_PROD') ?: getenv('DB_USERNAME') ?: 'root';
+$password = getenv('DB_PASSWORD_PROD') ?: getenv('DB_PASSWORD') ?: '';
+$dbname = getenv('DB_NAME_PROD') ?: getenv('DB_NAME') ?: 'game_platform';
 
 // Validate configuration - only check for placeholders, not empty values
 if (strpos($servername, '%%DB_HOST%%') !== false) {

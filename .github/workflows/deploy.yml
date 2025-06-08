@@ -16,36 +16,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Update connection.php with secrets (before deploy)
+      - name: Update connection.php with secrets
         run: |
-          echo "🔧 Updating database configuration locally before deploy..."
-          
-          # Check if the file exists
-          if [ ! -f "public/backend/db/connection.php" ]; then
-            echo "❌ Error: connection.php file not found locally!"
-            ls -la public/backend/db/
-            exit 1
-          fi
-          
-          echo "📋 Original file content (first 10 lines):"
-          head -n 10 public/backend/db/connection.php
-          
-          echo "🔄 Replacing placeholders locally..."
           sed -i "s|%%DB_HOST%%|${{ secrets.DB_HOST }}|g" public/backend/db/connection.php
           sed -i "s|%%DB_USER_PROD%%|${{ secrets.DB_USER_PROD }}|g" public/backend/db/connection.php
           sed -i "s|%%DB_PASSWORD_PROD%%|${{ secrets.DB_PASSWORD_PROD }}|g" public/backend/db/connection.php
           sed -i "s|%%DB_NAME_PROD%%|${{ secrets.DB_NAME_PROD }}|g" public/backend/db/connection.php
-          
-          echo "📋 Updated file content (first 10 lines):"
-          head -n 10 public/backend/db/connection.php
-          
-          # Verify that placeholders were actually replaced
-          if grep -q "%%DB_HOST%%" public/backend/db/connection.php; then
-            echo "❌ Error: DB_HOST placeholder still exists!"
-            exit 1
-          fi
-          
-          echo "✅ Database configuration updated successfully locally!"
 
       - name: Prepare remote target directory
         uses: appleboy/ssh-action@v1.0.3
@@ -70,111 +46,6 @@ jobs:
           REMOTE_USER: ${{ secrets.AWS_USERNAME }}
           TARGET: "/var/www/html/"
           EXCLUDE: "/.git/, /.github/, /db_schema.sql, /README.md, /IMPLEMENTATION_GUIDE.md"
-
-      - name: Verify database configuration was deployed correctly
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.AWS_HOST }}
-          username: ${{ secrets.AWS_USERNAME }}
-          key: ${{ secrets.AWS_SSH_KEY }}
-          script: |
-            echo "🔍 Verifying database configuration..."
-            
-            CONFIG_FILE="/var/www/html/public/backend/db/connection.php"
-            
-            if [ ! -f "$CONFIG_FILE" ]; then
-              echo "❌ Error: connection.php file not found!"
-              exit 1
-            fi
-            
-            echo "📋 Deployed file content (first 10 lines):"
-            head -n 10 "$CONFIG_FILE"
-            
-            # Check if placeholders still exist
-            if grep -q "%%DB_HOST%%" "$CONFIG_FILE"; then
-              echo "❌ Error: DB_HOST placeholder still exists after deploy!"
-              echo "🔧 Applying manual fix..."
-              sed -i "s|%%DB_HOST%%|${{ secrets.DB_HOST }}|g" "$CONFIG_FILE"
-            fi
-            
-            if grep -q "%%DB_USER_PROD%%" "$CONFIG_FILE"; then
-              echo "❌ Error: DB_USER_PROD placeholder still exists after deploy!"
-              echo "🔧 Applying manual fix..."
-              sed -i "s|%%DB_USER_PROD%%|${{ secrets.DB_USER_PROD }}|g" "$CONFIG_FILE"
-            fi
-            
-            if grep -q "%%DB_PASSWORD_PROD%%" "$CONFIG_FILE"; then
-              echo "❌ Error: DB_PASSWORD_PROD placeholder still exists after deploy!"
-              echo "🔧 Applying manual fix..."
-              sed -i "s|%%DB_PASSWORD_PROD%%|${{ secrets.DB_PASSWORD_PROD }}|g" "$CONFIG_FILE"
-            fi
-            
-            if grep -q "%%DB_NAME_PROD%%" "$CONFIG_FILE"; then
-              echo "❌ Error: DB_NAME_PROD placeholder still exists after deploy!"
-              echo "🔧 Applying manual fix..."
-              sed -i "s|%%DB_NAME_PROD%%|${{ secrets.DB_NAME_PROD }}|g" "$CONFIG_FILE"
-            fi
-            
-            echo "✅ Database configuration verified and fixed if needed!"
-
-      - name: Reset database with new schema
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.AWS_HOST }}
-          username: ${{ secrets.AWS_USERNAME }}
-          key: ${{ secrets.AWS_SSH_KEY }}
-          script: |
-            echo "🗃️ Fazendo backup do banco atual..."
-            mysqldump -h ${{ secrets.DB_HOST }} -u ${{ secrets.DB_USER_PROD }} -p${{ secrets.DB_PASSWORD_PROD }} ${{ secrets.DB_NAME_PROD }} > /tmp/backup_$(date +%Y%m%d_%H%M%S).sql || echo "Backup falhou ou banco não existe"
-            
-            echo "🗃️ Resetando banco de dados..."
-            mysql -h ${{ secrets.DB_HOST }} -u ${{ secrets.DB_USER_PROD }} -p${{ secrets.DB_PASSWORD_PROD }} -e "DROP DATABASE IF EXISTS ${{ secrets.DB_NAME_PROD }};"
-            
-            echo "📋 Aplicando novo schema..."
-            cat << 'EOF' | mysql -h ${{ secrets.DB_HOST }} -u ${{ secrets.DB_USER_PROD }} -p${{ secrets.DB_PASSWORD_PROD }}
-            CREATE DATABASE IF NOT EXISTS ${{ secrets.DB_NAME_PROD }}
-              DEFAULT CHARACTER SET = utf8mb4
-              DEFAULT COLLATE = utf8mb4_general_ci;
-
-            USE ${{ secrets.DB_NAME_PROD }};
-
-            CREATE TABLE IF NOT EXISTS \`users\` (
-              \`id\` INT AUTO_INCREMENT PRIMARY KEY,
-              \`username\` VARCHAR(255) NOT NULL UNIQUE,
-              \`password_hash\` VARCHAR(255) NOT NULL,
-              \`email\` VARCHAR(255) NOT NULL UNIQUE,
-              \`created_at\` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            );
-
-            CREATE TABLE IF NOT EXISTS \`games\` (
-              \`id\` INT AUTO_INCREMENT PRIMARY KEY,
-              \`user_id\` INT NOT NULL,
-              \`score\` INT NOT NULL,
-              \`played_at\` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-              FOREIGN KEY (\`user_id\`) REFERENCES \`users\`(\`id\`) ON DELETE CASCADE
-            );
-
-            CREATE TABLE IF NOT EXISTS \`leagues\` (
-              \`id\` INT AUTO_INCREMENT PRIMARY KEY,
-              \`name\` VARCHAR(255) NOT NULL UNIQUE,
-              \`creator_user_id\` INT NOT NULL,
-              \`keyword\` VARCHAR(50) NOT NULL,
-              \`created_at\` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-              FOREIGN KEY (\`creator_user_id\`) REFERENCES \`users\`(\`id\`) ON DELETE CASCADE
-            );
-
-            CREATE TABLE IF NOT EXISTS \`league_members\` (
-              \`id\` INT AUTO_INCREMENT PRIMARY KEY,
-              \`league_id\` INT NOT NULL,
-              \`user_id\` INT NOT NULL,
-              \`joined_at\` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-              FOREIGN KEY (\`league_id\`) REFERENCES \`leagues\`(\`id\`) ON DELETE CASCADE,
-              FOREIGN KEY (\`user_id\`) REFERENCES \`users\`(\`id\`) ON DELETE CASCADE,
-              UNIQUE KEY \`unique_league_user\` (\`league_id\`, \`user_id\`)
-            );
-            EOF
-            
-            echo "✅ Schema aplicado com sucesso!"
 
       - name: Set final permissions on EC2
         uses: appleboy/ssh-action@v1.0.3

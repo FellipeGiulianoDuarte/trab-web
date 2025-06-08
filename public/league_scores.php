@@ -72,6 +72,7 @@ $weekly_result = $stmt4->get_result();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Placar da Liga: <?php echo htmlspecialchars($league['name']); ?></title>
+    <link rel="icon" type="image/png" href="icon.png">
     <link rel="stylesheet" href="css/style.css">
     <style>
         .league-scores-container {

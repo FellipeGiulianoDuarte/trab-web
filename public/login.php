@@ -2,11 +2,11 @@
 if (session_status() == PHP_SESSION_NONE) { session_start(); }
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
+    <title>Entrar</title>
     <style>
         body {
             font-family: sans-serif;
@@ -88,9 +88,8 @@ if (session_status() == PHP_SESSION_NONE) { session_start(); }
         }
     </style>
 </head>
-<body>
-    <div class="container">
-        <h2>Login</h2>
+<body>    <div class="container">
+        <h2>Entrar</h2>
 
         <?php if (isset($_SESSION['error_message'])): ?>
             <div class="alert alert-danger">
@@ -108,25 +107,20 @@ if (session_status() == PHP_SESSION_NONE) { session_start(); }
                     unset($_SESSION['success_message']);
                 ?>
             </div>
-        <?php endif; ?>        <form action="backend/auth/handle_login.php" method="POST">
-            <div>
-                <label for="login_identifier">Username or Email:</label>
+        <?php endif; ?>        <form action="backend/auth/handle_login.php" method="POST">            <div>
+                <label for="login_identifier">Nome de usuário ou Email:</label>
                 <input type="text" id="login_identifier" name="login_identifier" required>
-            </div>
-            <div>
-                <label for="password">Password:</label>
+            </div>            <div>
+                <label for="password">Senha:</label>
                 <input type="password" id="password" name="password" required>
-            </div>
-            <div class="checkbox-container">
+            </div>            <div class="checkbox-container">
                 <input type="checkbox" id="remember_me" name="remember_me" value="1">
-                <label for="remember_me">Remember me for 7 days</label>
+                <label for="remember_me">Lembrar-me por 7 dias</label>
+            </div>            <div>
+                <input type="submit" value="Entrar">
             </div>
-            <div>
-                <input type="submit" value="Login">
-            </div>
-        </form>
-        <p style="text-align: center; margin-top: 15px;">
-            Don't have an account? <a href="register.php">Register here</a>
+        </form>        <p style="text-align: center; margin-top: 15px;">
+            Não tem uma conta? <a href="register.php">Cadastre-se aqui</a>
         </p>
     </div>
 </body>

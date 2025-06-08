@@ -4,11 +4,11 @@ if (session_status() == PHP_SESSION_NONE) {
 }
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Game Platform</title>
+    <title>Plataforma de Jogos</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -56,25 +56,24 @@ if (session_status() == PHP_SESSION_NONE) {
         }
     </style>
 </head>
-<body>
-    <div class="container">
+<body>    <div class="container">
         <?php if (isset($_SESSION['user_id'])): ?>
             <h1>
-                Welcome, <?php echo isset($_SESSION['username']) ? htmlspecialchars($_SESSION['username']) : 'User'; ?>!
+                Bem-vindo, <?php echo isset($_SESSION['username']) ? htmlspecialchars($_SESSION['username']) : 'Usuário'; ?>!
             </h1>
-            <p>What would you like to do?</p>
+            <p>O que você gostaria de fazer?</p>
             <div class="nav-links">
-                <a href="game_page.php">Play Game</a>
-                <a href="scores.php">View Scores</a>
-                <a href="leagues.php">View Leagues</a>
-                <a href="backend/auth/logout.php" class="logout-link">Logout</a> <!-- Direct path to backend logout handler -->
+                <a href="game_page.php">Jogar</a>
+                <a href="scores.php">Ver Pontuações</a>
+                <a href="leagues.php">Ver Ligas</a>
+                <a href="backend/auth/logout.php" class="logout-link">Sair</a> <!-- Direct path to backend logout handler -->
             </div>
         <?php else: ?>
-            <h1>Welcome to the Game Platform!</h1>
-            <p>Please log in or register to continue.</p>
+            <h1>Bem-vindo à Plataforma de Jogos!</h1>
+            <p>Por favor, faça login ou cadastre-se para continuar.</p>
             <div class="nav-links">
-                <a href="login.php">Login</a>
-                <a href="register.php">Register</a>
+                <a href="login.php">Entrar</a>
+                <a href="register.php">Cadastrar</a>
             </div>
         <?php endif; ?>
     </div>

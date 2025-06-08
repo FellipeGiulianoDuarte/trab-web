@@ -2,11 +2,11 @@
 if (session_status() == PHP_SESSION_NONE) { session_start(); }
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User Registration</title>
+    <title>Cadastro de Usuário</title>
     <style>
         body {
             font-family: sans-serif;
@@ -100,12 +100,10 @@ if (session_status() == PHP_SESSION_NONE) { session_start(); }
                     unset($_SESSION['success_message']);
                 ?>
             </div>
-        <?php endif; ?>
-
-        <h2>Register</h2>
+        <?php endif; ?>        <h2>Cadastrar</h2>
         <form action="backend/auth/handle_register.php" method="POST">
             <div>
-                <label for="username">Username:</label>
+                <label for="username">Nome de usuário:</label>
                 <input type="text" id="username" name="username" required maxlength="50">
             </div>
             <div>
@@ -114,16 +112,16 @@ if (session_status() == PHP_SESSION_NONE) { session_start(); }
                 <div id="email-error" class="error-message"></div>
             </div>
             <div>
-                <label for="password">Password:</label>
+                <label for="password">Senha:</label>
                 <input type="password" id="password" name="password" required maxlength="72">
             </div>
             <div>
-                <label for="confirm_password">Confirm Password:</label>
+                <label for="confirm_password">Confirmar Senha:</label>
                 <input type="password" id="confirm_password" name="confirm_password" required maxlength="72">
                 <div id="password-match-error" class="error-message"></div>
             </div>
             <div>
-                <input type="submit" value="Register">
+                <input type="submit" value="Cadastrar">
             </div>
         </form>
     </div>
@@ -133,19 +131,15 @@ if (session_status() == PHP_SESSION_NONE) { session_start(); }
         const form = document.querySelector('form');
         const passwordInput = document.getElementById('password');
         const confirmPasswordInput = document.getElementById('confirm_password');
-        const passwordMatchError = document.getElementById('password-match-error');
-
-        emailInput.addEventListener('input', () => {
+        const passwordMatchError = document.getElementById('password-match-error');        emailInput.addEventListener('input', () => {
             if (emailInput.validity.typeMismatch || !isValidEmail(emailInput.value)) {
-                emailError.textContent = 'Please enter a valid email address.';
+                emailError.textContent = 'Por favor, insira um endereço de email válido.';
             } else {
                 emailError.textContent = '';
             }
-        });
-
-        function checkPasswordMatch() {
+        });        function checkPasswordMatch() {
             if (passwordInput.value !== confirmPasswordInput.value) {
-                passwordMatchError.textContent = 'Passwords do not match.';
+                passwordMatchError.textContent = 'As senhas não coincidem.';
                 return false;
             } else {
                 passwordMatchError.textContent = '';
@@ -154,12 +148,10 @@ if (session_status() == PHP_SESSION_NONE) { session_start(); }
         }
 
         confirmPasswordInput.addEventListener('input', checkPasswordMatch);
-        passwordInput.addEventListener('input', checkPasswordMatch);
-
-        form.addEventListener('submit', (event) => {
+        passwordInput.addEventListener('input', checkPasswordMatch);        form.addEventListener('submit', (event) => {
             let isValid = true;
             if (!isValidEmail(emailInput.value)) {
-                emailError.textContent = 'Please enter a valid email address.';
+                emailError.textContent = 'Por favor, insira um endereço de email válido.';
                 isValid = false;
             }
             if (!checkPasswordMatch()) {

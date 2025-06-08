@@ -13,7 +13,7 @@ $password = $_POST['password'] ?? '';
 $remember_me = isset($_POST['remember_me']) && $_POST['remember_me'] === '1';
 
 if (empty($login_identifier) || empty($password)) {
-    $_SESSION['error_message'] = "Both username/email and password are required.";
+    $_SESSION['error_message'] = "Nome de usuário/email e senha são obrigatórios.";
     header("Location: ../../login.php");
     exit();
 }
@@ -22,7 +22,7 @@ $sql = "SELECT id, username, password_hash FROM users WHERE username = ? OR emai
 $stmt = $conn->prepare($sql);
 
 if ($stmt === false) {
-    $_SESSION['error_message'] = "Database error. Please try again later. (Code: P1)";
+    $_SESSION['error_message'] = "Erro no banco de dados. Tente novamente mais tarde. (Código: P1)";
     error_log("Prepare failed: (" . $conn->errno . ") " . $conn->error);
     header("Location: ../../login.php");
     exit();
@@ -31,7 +31,7 @@ if ($stmt === false) {
 $stmt->bind_param("ss", $login_identifier, $login_identifier);
 
 if (!$stmt->execute()) {
-    $_SESSION['error_message'] = "Database error. Please try again later. (Code: E1)";
+    $_SESSION['error_message'] = "Erro no banco de dados. Tente novamente mais tarde. (Código: E1)";
     error_log("Execute failed: (" . $stmt->errno . ") " . $stmt->error);
     $stmt->close();
     $conn->close();
@@ -48,16 +48,15 @@ if ($result->num_rows === 1) {
         
         header("Location: ../../index.php");
         $stmt->close();
-        $conn->close();
-        exit();} else {
-        $_SESSION['error_message'] = "Invalid credentials.";
+        $conn->close();        exit();} else {
+        $_SESSION['error_message'] = "Credenciais inválidas.";
         $stmt->close();
         $conn->close();
         header("Location: ../../login.php");
         exit();
     }
 } else {
-    $_SESSION['error_message'] = "Invalid credentials.";
+    $_SESSION['error_message'] = "Credenciais inválidas.";
     $stmt->close();
     $conn->close();
     header("Location: ../../login.php");
@@ -66,7 +65,7 @@ if ($result->num_rows === 1) {
 
 $stmt->close();
 $conn->close();
-$_SESSION['error_message'] = "An unexpected error occurred.";
+$_SESSION['error_message'] = "Ocorreu um erro inesperado.";
 header("Location: ../../login.php");
 exit();
 ?>

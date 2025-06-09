@@ -71,7 +71,6 @@ if (session_status() == PHP_SESSION_NONE) {
             </div>
         <?php else: ?>
             <h1>Bem-vindo!</h1>
-            <p>Você não está logado.</p>
             <p>Por favor, faça login ou cadastre-se para continuar.</p>
             <div class="nav-links">
                 <a href="login.php">Entrar</a>

@@ -70,6 +70,8 @@ if (session_status() == PHP_SESSION_NONE) {
                 <a href="backend/auth/logout.php" class="logout-link">Sair</a> <!-- Direct path to backend logout handler -->
             </div>
         <?php else: ?>
+            <h1>Bem-vindo!</h1>
+            <p>Você não está logado.</p>
             <p>Por favor, faça login ou cadastre-se para continuar.</p>
             <div class="nav-links">
                 <a href="login.php">Entrar</a>
